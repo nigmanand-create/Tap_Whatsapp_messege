@@ -1,0 +1,143 @@
+services:
+  # 1. PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: tapbuddy-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-tapbuddy}
+      POSTGRES_USER: ${DB_USER:-tapbuddy}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-frappe}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: always
+
+  # 2. Redis Cache Service
+  redis-cache:
+    image: redis:alpine
+    container_name: tapbuddy-redis-cache
+    command: redis-server
+    volumes:
+      - redis-cache-data:/data
+    restart: always
+
+  # 3. Redis Queue Service
+  redis-queue:
+    image: redis:alpine
+    container_name: tapbuddy-redis-queue
+    command: redis-server
+    volumes:
+      - redis-queue-data:/data
+    restart: always
+
+  # 4. Web Application (Frappe Web / Gunicorn)
+  web:
+    build: .
+    container_name: tapbuddy-web
+    command: web
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-tapbuddy}
+      DB_USER: ${DB_USER:-tapbuddy}
+      DB_PASSWORD: ${DB_PASSWORD:-frappe}
+      REDIS_CACHE: redis-cache
+      REDIS_QUEUE: redis-queue
+      SITE_NAME: ${SITE_NAME:-tapbuddy.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the workspace to reflect changes in real-time
+      - .:/home/frappe/frappe-bench
+      # Anonymous volumes prevent host libraries (e.g. macOS env) from overwriting Linux binaries inside container
+      - /home/frappe/frappe-bench/env
+      - /home/frappe/frappe-bench/apps/frappe/node_modules
+      - site-assets:/home/frappe/frappe-bench/sites
+    depends_on:
+      - db
+      - redis-cache
+      - redis-queue
+    restart: always
+
+  # 5. Socket.io Websocket Service
+  socketio:
+    build: .
+    container_name: tapbuddy-socketio
+    command: socketio
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-tapbuddy}
+      DB_USER: ${DB_USER:-tapbuddy}
+      DB_PASSWORD: ${DB_PASSWORD:-frappe}
+      REDIS_CACHE: redis-cache
+      REDIS_QUEUE: redis-queue
+      SITE_NAME: ${SITE_NAME:-tapbuddy.local}
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/home/frappe/frappe-bench
+      - /home/frappe/frappe-bench/env
+      - /home/frappe/frappe-bench/apps/frappe/node_modules
+      - site-assets:/home/frappe/frappe-bench/sites
+    depends_on:
+      - web
+    restart: always
+
+  # 6. Asynchronous Background Worker Service
+  worker:
+    build: .
+    container_name: tapbuddy-worker
+    command: worker
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-tapbuddy}
+      DB_USER: ${DB_USER:-tapbuddy}
+      DB_PASSWORD: ${DB_PASSWORD:-frappe}
+      REDIS_CACHE: redis-cache
+      REDIS_QUEUE: redis-queue
+      SITE_NAME: ${SITE_NAME:-tapbuddy.local}
+    volumes:
+      - .:/home/frappe/frappe-bench
+      - /home/frappe/frappe-bench/env
+      - /home/frappe/frappe-bench/apps/frappe/node_modules
+      - site-assets:/home/frappe/frappe-bench/sites
+    depends_on:
+      - web
+    restart: always
+
+  # 7. Scheduler Service (handles cron jobs like sync schedules)
+  scheduler:
+    build: .
+    container_name: tapbuddy-scheduler
+    command: scheduler
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-tapbuddy}
+      DB_USER: ${DB_USER:-tapbuddy}
+      DB_PASSWORD: ${DB_PASSWORD:-frappe}
+      REDIS_CACHE: redis-cache
+      REDIS_QUEUE: redis-queue
+      SITE_NAME: ${SITE_NAME:-tapbuddy.local}
+    volumes:
+      - .:/home/frappe/frappe-bench
+      - /home/frappe/frappe-bench/env
+      - /home/frappe/frappe-bench/apps/frappe/node_modules
+      - site-assets:/home/frappe/frappe-bench/sites
+    depends_on:
+      - web
+    restart: always
+
+volumes:
+  db-data:
+    driver: local
+  redis-cache-data:
+    driver: local
+  redis-queue-data:
+    driver: local
+  site-assets:
+    driver: local
