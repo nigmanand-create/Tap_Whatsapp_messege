@@ -1,0 +1,59 @@
+{
+ "doctype": "DocType",
+ "name": "Glific Field Mapping",
+ "module": "TAP Buddy",
+ "autoname": "field:glific_field",
+ "title_field": "glific_field",
+ "search_fields": "glific_field,source_field",
+ "custom": 0,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+
+ "fields": [
+  {
+   "fieldname": "enabled",
+   "label": "Enabled",
+   "fieldtype": "Check",
+   "default": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "source_doctype",
+   "label": "Source DocType",
+   "fieldtype": "Link",
+   "options": "DocType",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "source_field",
+   "label": "Source Field",
+   "fieldtype": "Data",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "glific_field",
+   "label": "Glific Field",
+   "fieldtype": "Data",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "notes",
+   "label": "Notes",
+   "fieldtype": "Small Text"
+  }
+ ],
+
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  }
+ ]
+}

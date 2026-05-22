@@ -1,0 +1,8 @@
+{
+  "venvPath": "../../",
+  "venv": "env",
+  "extraPaths": [
+    "../../apps/frappe",
+    "../../env/lib/python3.14/site-packages"
+  ]
+}

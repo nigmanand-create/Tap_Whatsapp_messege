@@ -1,0 +1,91 @@
+{
+ "doctype": "DocType",
+ "name": "Campaign Recipient",
+ "module": "TAP Buddy",
+ "autoname": "REC-.YYYY.-.#####",
+ "title_field": "school",
+ "search_fields": "campaign,school,status",
+ "custom": 0,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+
+ "fields": [
+  {
+   "fieldname": "campaign",
+   "label": "Campaign",
+   "fieldtype": "Link",
+   "options": "TAP Campaign",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+
+  {
+   "fieldname": "school",
+   "label": "School",
+   "fieldtype": "Link",
+   "options": "School",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+
+  {
+   "fieldname": "status",
+   "label": "Status",
+   "fieldtype": "Select",
+    "options": "Pending\nQueued\nProcessing\nSent\nDelivered\nRead\nFailed",
+   "default": "Pending",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+
+  {
+   "fieldname": "scheduled_time",
+   "label": "Scheduled Time",
+   "fieldtype": "Datetime"
+  },
+
+  {
+   "fieldname": "sent_time",
+   "label": "Sent Time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1
+  },
+
+  {
+   "fieldname": "delivered_time",
+   "label": "Delivered Time",
+   "fieldtype": "Datetime"
+  },
+
+  {
+   "fieldname": "read_time",
+   "label": "Read Time",
+   "fieldtype": "Datetime"
+  },
+
+  {
+   "fieldname": "failure_reason",
+   "label": "Failure Reason",
+   "fieldtype": "Small Text",
+   "read_only": 1
+  },
+
+  {
+   "fieldname": "retry_count",
+   "label": "Retry Count",
+   "fieldtype": "Int",
+   "default": 0,
+   "read_only": 1
+  }
+ ],
+
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  }
+ ]
+}

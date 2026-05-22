@@ -1,0 +1,40 @@
+{
+ "doctype": "DocType",
+ "name": "WhatsApp Template",
+ "module": "TAP Buddy",
+ "autoname": "field:template_name",
+ "title_field": "template_name",
+ "search_fields": "template_name",
+ "custom": 0,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+
+ "fields": [
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "label": "Template Name",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+
+  {
+   "fieldname": "message",
+   "fieldtype": "Small Text",
+   "label": "Message",
+   "reqd": 1
+  }
+ ],
+
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  }
+ ]
+}

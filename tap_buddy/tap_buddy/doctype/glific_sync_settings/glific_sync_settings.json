@@ -1,0 +1,81 @@
+{
+ "doctype": "DocType",
+ "name": "Glific Sync Settings",
+ "module": "TAP Buddy",
+ "issingle": 1,
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sync_sec",
+  "enabled",
+  "dry_run",
+  "sync_contacts",
+  "sync_groups",
+  "batch_size",
+    "sync_only_new",
+  "col_break_1",
+  "last_synced_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "sync_sec",
+   "fieldtype": "Section Break",
+   "label": "Glific Sync"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable Sync"
+  },
+  {
+   "default": "1",
+   "fieldname": "dry_run",
+   "fieldtype": "Check",
+   "label": "Dry Run"
+  },
+  {
+   "default": "1",
+   "fieldname": "sync_contacts",
+   "fieldtype": "Check",
+   "label": "Sync Contacts"
+  },
+  {
+   "default": "0",
+   "fieldname": "sync_groups",
+   "fieldtype": "Check",
+   "label": "Sync Groups"
+  },
+  {
+   "default": "100",
+   "fieldname": "batch_size",
+   "fieldtype": "Int",
+   "label": "Batch Size"
+  },
+    {
+     "default": "1",
+     "fieldname": "sync_only_new",
+     "fieldtype": "Check",
+     "label": "Sync Only New/Modified"
+    },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_synced_at",
+   "fieldtype": "Datetime",
+   "label": "Last Synced At",
+   "read_only": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  }
+ ]
+}

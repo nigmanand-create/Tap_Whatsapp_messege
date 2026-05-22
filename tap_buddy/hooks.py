@@ -26,7 +26,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/tap_buddy/css/tap_buddy.css"
-# app_include_js = "/assets/tap_buddy/js/tap_buddy.js"
+app_include_js = "/assets/tap_buddy/js/tap_buddy.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/tap_buddy/css/tap_buddy.css"
@@ -148,23 +148,24 @@ app_license = "mit"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"tap_buddy.tasks.all"
-# 	],
-# 	"daily": [
-# 		"tap_buddy.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"tap_buddy.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"tap_buddy.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"tap_buddy.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"cron": {
+		"*/10 * * * *": [
+			"tap_buddy.tasks.scheduler.process_pending_lms_events",
+		],
+		"*/5 * * * *": [
+			"tap_buddy.tasks.scheduler.process_pending_webhook_events",
+		],
+		"0,30 * * * *": [
+			"tap_buddy.tasks.scheduler.retry_failed_messages",
+		]
+	},
+	"hourly": [
+		"tap_buddy.tasks.scheduler.sweep_stale_campaigns",
+		"tap_buddy.tasks.scheduler.sync_campaign_counts",
+		"tap_buddy.tasks.scheduler.process_glific_sync"
+	],
+}
 
 # Testing
 # -------

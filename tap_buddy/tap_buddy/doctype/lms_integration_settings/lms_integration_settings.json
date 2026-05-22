@@ -1,0 +1,100 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "lms_sec",
+  "enabled",
+  "lms_base_url",
+  "lms_api_key",
+  "col_break_1",
+  "webhook_secret",
+  "webhook_signature_header",
+  "polling_sec",
+  "polling_enabled",
+  "polling_interval_minutes",
+  "last_polled_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "lms_sec",
+   "fieldtype": "Section Break",
+   "label": "LMS Integration"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable LMS Integration"
+  },
+  {
+   "description": "Base URL for LMS API",
+   "fieldname": "lms_base_url",
+   "fieldtype": "Data",
+   "label": "LMS Base URL"
+  },
+  {
+   "fieldname": "lms_api_key",
+   "fieldtype": "Password",
+   "label": "LMS API Key"
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Secret"
+  },
+  {
+   "default": "X-LMS-Signature",
+   "fieldname": "webhook_signature_header",
+   "fieldtype": "Data",
+   "label": "Webhook Signature Header"
+  },
+  {
+   "fieldname": "polling_sec",
+   "fieldtype": "Section Break",
+   "label": "Polling"
+  },
+  {
+   "default": "0",
+   "fieldname": "polling_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Polling"
+  },
+  {
+   "default": "15",
+   "fieldname": "polling_interval_minutes",
+   "fieldtype": "Int",
+   "label": "Polling Interval (minutes)"
+  },
+  {
+   "fieldname": "last_polled_at",
+   "fieldtype": "Datetime",
+   "label": "Last Polled At",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "issingle": 1,
+ "links": [],
+ "module": "TAP Buddy",
+ "name": "LMS Integration Settings",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

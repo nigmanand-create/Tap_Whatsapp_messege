@@ -1,0 +1,160 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-05-15 20:06:35.757500",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "campaign_name",
+  "school_name",
+  "template",
+  "message_template",
+  "send_date",
+  "status",
+  "targeting_type",
+  "school_group",
+  "cb_counters",
+  "total_recipients",
+  "sent_count",
+  "delivered_count",
+  "failed_count",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "TAP-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "TAP-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "campaign_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Campaign Name",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.targeting_type==\"Single School\"",
+   "fieldname": "school_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "School Name",
+   "mandatory_depends_on": "eval:doc.targeting_type==\"Single School\"",
+   "options": "School"
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "WhatsApp Template",
+   "options": "WhatsApp Template",
+   "reqd": 1
+  },
+  {
+   "fieldname": "message_template",
+   "fieldtype": "Small Text",
+   "label": "Message Template",
+   "reqd": 1
+  },
+  {
+   "fieldname": "send_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Send Date",
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+        "options": "Draft\nQueued\nRunning\nCompleted\nPaused\nScheduled\nSent\nFailed\nCancelled",
+   "read_only": 1
+  },
+  {
+   "default": "Single School",
+   "fieldname": "targeting_type",
+   "fieldtype": "Select",
+   "label": "Targeting Type",
+   "options": "Single School\nSchool Group",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.targeting_type==\"School Group\"",
+   "fieldname": "school_group",
+   "fieldtype": "Link",
+   "label": "School Group",
+   "mandatory_depends_on": "eval:doc.targeting_type==\"School Group\"",
+   "options": "School Group"
+  },
+  {
+   "fieldname": "cb_counters",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_recipients",
+   "fieldtype": "Int",
+   "label": "Total Recipients",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sent_count",
+   "fieldtype": "Int",
+   "label": "Sent Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivered_count",
+   "fieldtype": "Int",
+   "label": "Delivered Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "failed_count",
+   "fieldtype": "Int",
+   "label": "Failed Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "TAP Campaign",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-05-15 20:13:50.358878",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "TAP Campaign",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "campaign_name,school_name,template",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "campaign_name"
+}

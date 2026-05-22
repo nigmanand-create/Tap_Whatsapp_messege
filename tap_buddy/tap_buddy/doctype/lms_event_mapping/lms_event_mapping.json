@@ -1,0 +1,88 @@
+{
+ "doctype": "DocType",
+ "name": "LMS Event Mapping",
+ "module": "TAP Buddy",
+ "autoname": "field:event_type",
+ "title_field": "event_type",
+ "search_fields": "event_type,template",
+ "custom": 0,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+
+ "fields": [
+  {
+   "fieldname": "event_type",
+   "label": "Event Type",
+   "fieldtype": "Data",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "label": "Enabled",
+   "fieldtype": "Check",
+   "default": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "action",
+   "label": "Action",
+   "fieldtype": "Select",
+   "options": "Log Only\nCreate Campaign",
+   "default": "Log Only",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "campaign_name_prefix",
+   "label": "Campaign Name Prefix",
+   "fieldtype": "Data"
+  },
+  {
+   "fieldname": "template",
+   "label": "WhatsApp Template",
+   "fieldtype": "Link",
+   "options": "WhatsApp Template"
+  },
+  {
+   "fieldname": "message_template_override",
+   "label": "Message Template Override",
+   "fieldtype": "Small Text"
+  },
+  {
+   "fieldname": "targeting_type",
+   "label": "Targeting Type",
+   "fieldtype": "Select",
+   "options": "Single School\nSchool Group",
+   "default": "Single School"
+  },
+  {
+   "fieldname": "school_name_key",
+   "label": "School Name Key",
+   "fieldtype": "Data",
+   "description": "Payload key that contains the school name"
+  },
+  {
+   "fieldname": "school_group_key",
+   "label": "School Group Key",
+   "fieldtype": "Data",
+   "description": "Payload key that contains the school group name"
+  },
+  {
+   "fieldname": "notes",
+   "label": "Notes",
+   "fieldtype": "Small Text"
+  }
+ ],
+
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  }
+ ]
+}

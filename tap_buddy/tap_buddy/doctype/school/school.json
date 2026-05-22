@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "autoname": "field:school_name",
+ "creation": "2026-05-15 20:06:35.702466",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "school_name",
+  "principal_name",
+  "whatsapp_number",
+  "state",
+  "district",
+  "udise_code",
+  "block"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "fieldname": "school_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "School Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "principal_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Principal Name"
+  },
+  {
+   "fieldname": "whatsapp_number",
+   "fieldtype": "Phone",
+   "label": "WhatsApp Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "State"
+  },
+  {
+   "fieldname": "district",
+   "fieldtype": "Data",
+   "label": "District"
+  },
+  {
+   "fieldname": "udise_code",
+   "fieldtype": "Data",
+   "label": "UDISE Code",
+   "unique": 1
+  },
+  {
+   "fieldname": "block",
+   "fieldtype": "Data",
+   "label": "Block"
+  }
+ ],
+ "links": [],
+ "modified": "2026-05-15 20:13:49.523476",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "School",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "school_name,state,district",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "school_name"
+}

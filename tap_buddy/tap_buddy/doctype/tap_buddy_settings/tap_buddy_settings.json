@@ -1,0 +1,199 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-15 20:08:35.751998",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "api_settings_sec",
+  "glific_url",
+  "glific_token",
+  "glific_access_token",
+  "glific_refresh_token",
+  "glific_token_expiry",
+  "glific_phone_number",
+  "col_break_1",
+  "sync_mode_fallback",
+  "webhook_sec",
+  "webhook_enabled",
+  "webhook_secret",
+  "webhook_col_break",
+  "webhook_signature_header",
+  "dispatch_sec",
+  "batch_size",
+  "rate_limit",
+  "col_break_2",
+  "retry_count",
+  "dispatch_start_hour",
+  "dispatch_end_hour"
+ ],
+ "fields": [
+  {
+   "fieldname": "api_settings_sec",
+   "fieldtype": "Section Break",
+   "label": "Glific API Settings"
+  },
+  {
+   "description": "Base URL of the Glific API (e.g. https://api.glific.com/v1)",
+   "fieldname": "glific_url",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Glific URL",
+   "reqd": 1
+  },
+  {
+   "description": "API Token for authentication",
+   "fieldname": "glific_token",
+   "fieldtype": "Password",
+   "in_list_view": 1,
+   "label": "Glific Token",
+   "reqd": 1
+  },
+  {
+   "fieldname": "glific_access_token",
+   "fieldtype": "Password",
+   "label": "Glific Access Token",
+   "description": "Optional: access token for short-lived auth",
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "glific_refresh_token",
+   "fieldtype": "Password",
+   "label": "Glific Refresh Token",
+   "description": "Optional: refresh/renewal token for access tokens",
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "glific_token_expiry",
+   "fieldtype": "Datetime",
+   "label": "Glific Token Expiry",
+   "description": "Expiry time for the access token (UTC)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "glific_phone_number",
+   "fieldtype": "Data",
+   "label": "Glific Phone Number",
+   "description": "Optional: default sender phone number for Glific messages",
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Bypass background queue and dispatch immediately. Only for debugging!",
+   "fieldname": "sync_mode_fallback",
+   "fieldtype": "Check",
+   "label": "Enable Synchronous Fallback"
+  },
+    {
+     "fieldname": "webhook_sec",
+     "fieldtype": "Section Break",
+     "label": "Webhook Settings"
+    },
+    {
+     "default": "0",
+     "fieldname": "webhook_enabled",
+     "fieldtype": "Check",
+     "label": "Enable Webhook Processing"
+    },
+    {
+     "fieldname": "webhook_secret",
+     "fieldtype": "Password",
+     "label": "Webhook Secret"
+    },
+    {
+     "fieldname": "webhook_col_break",
+     "fieldtype": "Column Break"
+    },
+    {
+     "default": "X-Glific-Signature",
+     "fieldname": "webhook_signature_header",
+     "fieldtype": "Data",
+     "label": "Webhook Signature Header"
+    },
+  {
+   "fieldname": "dispatch_sec",
+   "fieldtype": "Section Break",
+   "label": "Dispatch Settings"
+  },
+  {
+   "default": "50",
+   "fieldname": "batch_size",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Batch Size",
+   "reqd": 1
+  },
+  {
+   "default": "20",
+   "fieldname": "rate_limit",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Rate Limit (messages/min)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "3",
+   "fieldname": "retry_count",
+   "fieldtype": "Int",
+   "label": "Max Retry Count",
+   "reqd": 1
+  },
+  {
+   "default": "09:00:00",
+   "fieldname": "dispatch_start_hour",
+   "fieldtype": "Time",
+   "label": "Dispatch Start Time",
+   "reqd": 1
+  },
+  {
+   "default": "18:00:00",
+   "fieldname": "dispatch_end_hour",
+   "fieldtype": "Time",
+   "label": "Dispatch End Time",
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-05-15 20:08:35.751998",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "TAP Buddy Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "PI Admin",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "PI Operator",
+   "read": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
