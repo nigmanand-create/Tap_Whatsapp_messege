@@ -1,60 +1,29 @@
-<<<<<<< HEAD
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Local virtual environments
-env/
-.venv/
-venv/
-ENV/
-*.env
-
-# Node.js dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Frappe specific site and configuration data
-sites/tapbuddy.local/
-sites/assets/
-logs/
-*.log
-*.pid
-config/pids/
-
 # OS-specific files
 .DS_Store
 .DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
-# Editors and IDEs
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
+# Python files
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Editors
 *.swp
 *.swo
+.vscode/
+.idea/
 
-# Test files and coverage
-cypressVideos/
-.coverage
-coverage.xml
-.pytest_cache/
-=======
-.DS_Store
-*.pyc
-*.egg-info
-*.swp
+# Tags
 tags
-node_modules
-__pycache__
->>>>>>> 82a1bb4 (feat: Initialize App)
+
+# Node dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*
