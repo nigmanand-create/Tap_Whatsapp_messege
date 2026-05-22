@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.14-rc-slim-bookworm
 
 # Prevent interactive prompts during package installations
 ENV DEBIAN_FRONTEND=noninteractive
@@ -30,6 +30,7 @@ RUN groupadd -g 1000 frappe \
 
 # Establish work directory
 WORKDIR /home/frappe/frappe-bench
+RUN chown -R frappe:frappe /home/frappe/frappe-bench
 
 # Copy repository content (respects .dockerignore)
 COPY --chown=frappe:frappe . .
