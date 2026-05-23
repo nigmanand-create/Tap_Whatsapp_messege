@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "baseUrl": "../node_modules",
+        "noEmit": true,
+        "ignoreDeprecations": "6.0",
+        "typeRoots": [
+            "../node_modules/@types",
+            "../node_modules/cypress/types",
+            "../../../node_modules/@types",
+            "../../../node_modules/cypress/types"
+        ],
+        "types": [
+            "cypress"
+        ]
+    },
+    "include": [
+        "**/*.*"
+    ]
+}
