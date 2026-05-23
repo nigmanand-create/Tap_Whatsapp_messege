@@ -38,8 +38,10 @@ def dispatch_campaign(campaign_name):
     if campaign.status not in (STATUS_SCHEDULED, STATUS_QUEUED, STATUS_RUNNING, STATUS_SENT):
         return
 
-    if campaign.send_date and get_datetime(campaign.send_date) > now_datetime():
-        return
+    if campaign.send_date:
+        send_dt = get_datetime(campaign.send_date)
+        if send_dt and send_dt > now_datetime():
+            return
 
     settings = cast(Any, frappe.get_single("TAP Buddy Settings"))
     if not _is_within_dispatch_window(settings):
