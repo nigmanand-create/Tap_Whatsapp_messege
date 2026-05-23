@@ -3,11 +3,19 @@ frappe.ui.form.on("TAP Campaign", {
 		frm.__last_template_message = frm.doc.template
 			? frm.doc.message_template || ""
 			: frm.doc.message_template || "";
+
+		if (frm.doc.docstatus === 1 && frm.doc.status) {
+			frm.refresh_field("status");
+		}
 	},
 
 	before_submit(frm) {
 		frm.set_value("status", "Queued");
 		frm.refresh_field("status");
+	},
+
+	after_submit(frm) {
+		frm.reload_doc();
 	},
 
 	template(frm) {
