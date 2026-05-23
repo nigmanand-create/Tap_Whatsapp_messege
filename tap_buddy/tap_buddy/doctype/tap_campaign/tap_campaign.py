@@ -39,9 +39,19 @@ class TAPCampaign(Document):
         self._sync_message_template()
 
 
+    def before_submit(self):
+        self.status = STATUS_QUEUED
+
+
     def on_submit(self):
         # Queue-first: submit only enqueues, dispatch builds recipients/logs
         settings = frappe.get_single("TAP Buddy Settings")
+        try:
+            from tap_buddy.services.recipients import build_campaign_recipients
+
+            build_campaign_recipients(self.name)
+        except Exception:
+            frappe.logger().exception("Error creating campaign recipients on submit")
         
         if settings.sync_mode_fallback:
             # Synchronous execution (Debugging only)
@@ -56,24 +66,6 @@ class TAPCampaign(Document):
                 queue="default",
                 timeout=3600
             )
-
-        # Update Campaign Status (Queued is canonical; Scheduled is transitional)
-        self.db_set("status", STATUS_QUEUED)
-
-        # By default we follow a queue-first architecture: recipient creation
-        # happens in the dispatcher to avoid synchronous work during submit.
-        # For backward-compatibility or debugging, admins can enable
-        # `create_recipients_on_submit` in TAP Buddy Settings to opt-in to
-        # immediate recipient creation.
-        try:
-            create_now = getattr(settings, "create_recipients_on_submit", 0)
-            if create_now:
-                from tap_buddy.services.recipients import build_campaign_recipients
-
-                created = build_campaign_recipients(self.name)
-                frappe.logger().info(f"Created {created} campaign recipients for {self.name} on submit")
-        except Exception:
-            frappe.logger().exception("Error creating campaign recipients on submit")
 
     def on_cancel(self):
         # Cleanup logic if a scheduled campaign is canceled
