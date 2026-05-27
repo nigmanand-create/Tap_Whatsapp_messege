@@ -35,6 +35,10 @@ RUN chown -R frappe:frappe /home/frappe/frappe-bench
 # Copy repository content (respects .dockerignore)
 COPY --chown=frappe:frappe . .
 
+# Make reauth and reproducer scripts executable
+RUN chmod +x apps/tap_buddy/scripts/reauth_glific.py || true
+RUN chmod +x apps/tap_buddy/scripts/trace_glific_reproducer.py || true
+
 # Switch to the non-root user
 USER frappe
 
