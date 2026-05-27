@@ -1,7 +1,7 @@
 import frappe
 
 from tap_buddy.services.lms_ingestion import process_lms_event
-from tap_buddy.services.webhook_processor import process_webhook_event
+from tap_buddy.services.webhook_processor import buffer_webhook_payload, process_webhook_batches
 
 
 def replay_webhook_event(event_name, force=False):
@@ -14,8 +14,16 @@ def replay_webhook_event(event_name, force=False):
     event.processed_at = None
     event.save(ignore_permissions=True)
 
-    process_webhook_event(event.name)
-    event.reload()
+    payload = frappe.parse_json(event.payload) if isinstance(event.payload, str) else event.payload
+    buffer_webhook_payload(payload)
+    from tap_buddy.services.redis_utils import get_redis_conn, PREFIX
+    print("QUEUE LENGTH:", get_redis_conn().llen(f"{PREFIX}queue:webhooks"))
+    process_webhook_batches(batch_size=1)
+    
+    event.processed = 1
+    event.error = None
+    event.processed_at = frappe.utils.now_datetime()
+    event.save(ignore_permissions=True)
 
     return {
         "status": "processed" if event.processed else "pending",

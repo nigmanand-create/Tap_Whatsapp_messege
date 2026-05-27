@@ -10,7 +10,7 @@ def sync_glific():
     if not settings.enabled:
         return {"status": "disabled"}
 
-    results = {"contacts": 0, "groups": 0}
+    results = {"contacts": 0, "groups": 0, "memberships": 0}
     max_modified = None
 
     if settings.sync_contacts:
@@ -19,7 +19,12 @@ def sync_glific():
         max_modified = _max_datetime(max_modified, contact_result.get("max_modified"))
 
     if settings.sync_groups:
-        results["groups"] = _sync_groups(settings)
+        client = None if settings.dry_run else GlificClient()
+        group_map = _fetch_and_reconcile_groups(client, settings)
+        results["groups"] = len(group_map)
+        
+        member_result = _sync_group_memberships(client, settings, group_map)
+        results["memberships"] = member_result
 
     if max_modified:
         settings.last_synced_at = max_modified
@@ -75,21 +80,89 @@ def _sync_contacts(settings):
     return {"processed": processed, "max_modified": max_modified}
 
 
-def _sync_groups(settings):
+def _fetch_and_reconcile_groups(client, settings):
+    """
+    Fetches all groups from Glific, detects duplicates/stale mappings, 
+    and idempotently creates missing groups.
+    """
+    glific_groups = {}
+    if not settings.dry_run:
+        page = 1
+        while True:
+            try:
+                resp = client.get_groups({"page": page, "limit": 100})
+                data = resp.get("data", [])
+                for g in data:
+                    name = g.get("name")
+                    if name:
+                        glific_groups[name.strip().lower()] = g.get("id")
+                
+                meta = resp.get("metadata", {})
+                if not meta or not meta.get("next_page") or page >= 50:
+                    break
+                page += 1
+            except GlificAPIError as e:
+                frappe.log_error(title="Glific Group Fetch Error", message=str(e))
+                break
+
     mappings = frappe.get_all(
         "Glific Contact Group Mapping",
         filters={"enabled": 1},
         fields=["name", "school_group", "glific_group_id"],
     )
 
-    if not mappings:
-        return 0
-
-    client = None if settings.dry_run else GlificClient()
-    processed = 0
+    reconciled_map = {}
 
     for mapping in mappings:
         group_doc = frappe.get_doc("School Group", mapping.school_group)
+        group_name = group_doc.group_name.strip()
+        lower_name = group_name.lower()
+        glific_id = mapping.glific_group_id
+
+        if not settings.dry_run:
+            if lower_name in glific_groups:
+                actual_id = glific_groups[lower_name]
+                if str(glific_id) != str(actual_id):
+                    # Stale mapping detected, heal it locally
+                    frappe.db.set_value("Glific Contact Group Mapping", mapping.name, "glific_group_id", actual_id)
+                    glific_id = actual_id
+            else:
+                # Missing in Glific. Create idempotently.
+                try:
+                    resp = client.create_group({"name": group_name, "description": "Auto-synced from TAP Buddy"})
+                    new_id = _extract_group_id(resp)
+                    if new_id:
+                        frappe.db.set_value("Glific Contact Group Mapping", mapping.name, "glific_group_id", new_id)
+                        glific_id = new_id
+                        glific_groups[lower_name] = new_id
+                except GlificAPIError as e:
+                    # Could be a race condition from another worker. Fetch again later.
+                    frappe.logger("tap_buddy_sync").error(f"Failed to create group {group_name}: {str(e)}")
+                    continue
+
+        reconciled_map[mapping.school_group] = glific_id
+
+    frappe.db.commit()
+    return reconciled_map
+
+
+def _sync_group_memberships(client, settings, group_map):
+    """
+    Syncs memberships safely, ensuring contacts are upserted before association.
+    """
+    processed = 0
+    if not group_map:
+        return 0
+
+    for school_group_id, glific_group_id in group_map.items():
+        if not glific_group_id:
+            continue
+            
+        try:
+            group_doc = frappe.get_doc("School Group", school_group_id)
+        except Exception:
+            continue
+            
         for member in group_doc.members:
             school = frappe.get_doc("School", member.school)
             payload = {
@@ -98,20 +171,26 @@ def _sync_groups(settings):
             }
             if not payload.get("phone"):
                 continue
+                
             if settings.dry_run:
                 processed += 1
                 continue
+                
             try:
                 contact = client.upsert_contact(payload)
                 contact_id = _extract_contact_id(contact)
                 if contact_id:
-                    client.add_contact_to_group(mapping.glific_group_id, contact_id)
-                    processed += 1
-            except GlificAPIError:
-                frappe.log_error(
-                    title="Glific Group Sync Error",
-                    message=f"Failed to sync group {mapping.school_group} for {school.name}",
-                )
+                    try:
+                        client.add_contact_to_group(glific_group_id, contact_id)
+                        processed += 1
+                    except GlificAPIError as e:
+                        # Ignore "already exists" style errors to prevent retry pollution
+                        err_str = str(e).lower()
+                        if "duplicate" not in err_str and "already" not in err_str and "exists" not in err_str:
+                            frappe.logger("tap_buddy_sync").error(f"Failed to add {school.name} to group {school_group_id}: {str(e)}")
+                            
+            except GlificAPIError as e:
+                frappe.logger("tap_buddy_sync").error(f"Failed to upsert member {school.name} for group {school_group_id}: {str(e)}")
 
     return processed
 
@@ -153,6 +232,23 @@ def _extract_contact_id(response):
             return response["data"].get("id")
         if "contact" in response and isinstance(response["contact"], dict):
             return response["contact"].get("id")
+    if isinstance(response, list) and response:
+        first = response[0]
+        if isinstance(first, dict) and "id" in first:
+            return first.get("id")
+    return None
+
+
+def _extract_group_id(response):
+    if not response:
+        return None
+    if isinstance(response, dict):
+        if "id" in response:
+            return response.get("id")
+        if "data" in response and isinstance(response["data"], dict):
+            return response["data"].get("id")
+        if "group" in response and isinstance(response["group"], dict):
+            return response["group"].get("id")
     return None
 
 

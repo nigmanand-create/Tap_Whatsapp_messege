@@ -44,7 +44,7 @@
 		"in_list": true,
 		"has_common": true,
 		"posthog": true,
-		"has_words": true,
+		"has_words": true, 
 		"validate_email": true,
 		"open_web_template_values_editor": true,
 		"validate_name": true,

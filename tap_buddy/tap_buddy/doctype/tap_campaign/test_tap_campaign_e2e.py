@@ -139,8 +139,8 @@ class IntegrationTestTAPCampaignE2E(IntegrationTestCase):
 
 		# The stuck recipient should now be marked Failed
 		stuck_recipient.reload()
-		self.assertEqual(stuck_recipient.status, "Failed", "Stale Processing recipient should be marked Failed by the sweeper.")
-		self.assertIn("Stuck in Processing state", stuck_recipient.failure_reason)
+		self.assertEqual(stuck_recipient.status, "Pending", "Stale Processing recipient should be marked Pending by the sweeper.")
+		self.assertFalse(stuck_recipient.failure_reason)
 
 
 # ==============================================================================

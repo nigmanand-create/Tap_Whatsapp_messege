@@ -13,14 +13,14 @@ def run_lms_pipeline(limit=100, process_pending=False):
     Usage:
       bench --site tapbuddy.local execute "tap_buddy.services.lms_pipeline.run_lms_pipeline(50, True)"
     """
-    # Ensure settings loaded from env are applied to the site single (optional)
+    # If env vars are present, sync them into the Frappe single doc so other
+    # parts of the app (LMSClient) pick them up via frappe.get_single().
     try:
-        # If env contains values, apply them to site so other parts of app use them.
-        from tap_buddy.ops import apply_literal_lms
+        from tap_buddy.ops import apply_lms_from_env
 
-        apply_literal_lms()
+        apply_lms_from_env()
     except Exception:
-        # non-fatal; continue
+        # non-fatal; continue with whatever is already in site settings
         pass
 
     res = poll_lms_students(limit=limit)

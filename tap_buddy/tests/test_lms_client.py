@@ -3,9 +3,22 @@ import types
 
 import tap_buddy.services.lms_client as lms_client
 
+# ---------------------------------------------------------------------------
+# TEST FIXTURE SECURITY NOTICE
+# ---------------------------------------------------------------------------
+# All credentials in this file are safe, non-functional mock placeholders.
+# Do NOT replace them with real API keys, tokens, or secrets.
+# ---------------------------------------------------------------------------
+
+_MOCK_LMS_BASE_URL = "https://lms.example-test.invalid"
+_MOCK_LMS_API_KEY = "mock-api-user:mock-api-secret-00000"
+
 
 def _make_settings():
-    return types.SimpleNamespace(lms_base_url="https://lms.evalix.xyz", lms_api_key="a2fbaaf31ddfb56:caac2943213af00")
+    return types.SimpleNamespace(
+        lms_base_url=_MOCK_LMS_BASE_URL,
+        lms_api_key=_MOCK_LMS_API_KEY,
+    )
 
 
 def test_get_students_builds_request_params(monkeypatch):
@@ -40,7 +53,7 @@ def test_get_students_builds_request_params(monkeypatch):
 
     assert "data" in result
     assert captured["method"] == "GET"
-    assert captured["url"] == "https://lms.evalix.xyz/api/resource/Student"
+    assert captured["url"] == f"{_MOCK_LMS_BASE_URL}/api/resource/Student"
     assert "fields" in captured["params"]
     assert json.loads(captured["params"]["fields"]) == ["name", "phone"]
     assert int(captured["params"]["limit_page_length"]) == 5

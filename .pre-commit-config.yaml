@@ -4,6 +4,14 @@ fail_fast: false
 
 
 repos:
+  # ── Secret scanning (MUST be first so it blocks before anything else runs) ──
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        name: "Scan for secrets (gitleaks)"
+        description: "Detect hardcoded secrets, tokens, and credentials before commit"
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:

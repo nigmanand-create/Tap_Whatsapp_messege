@@ -1,0 +1,23 @@
+# .gitleaks.toml — TAP Buddy secret scanning configuration
+# Extends gitleaks defaults with project-specific allowlists.
+#
+# Allowlisted patterns here are KNOWN-SAFE placeholder values used in tests.
+# DO NOT add real credentials to this allowlist.
+
+title = "TAP Buddy Gitleaks Config"
+
+[allowlist]
+description = "Known-safe mock values and documentation placeholders"
+
+# These are safe mock API keys used in unit test fixtures (test_lms_client.py,
+# test_lms_ingestion.py). They contain the word "mock" and point to .invalid TLD.
+regexes = [
+    "mock-api-user:mock-api-secret-00000",
+    "mock-api-secret",
+]
+
+# README examples are safe — they use obvious placeholder strings like
+# "long-primary-token", "super-secret" etc.
+paths = [
+    "README.md",
+]

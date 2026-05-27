@@ -55,7 +55,8 @@
    "fieldname": "provider_message_id",
    "label": "Provider Message ID",
    "fieldtype": "Data",
-   "read_only": 1
+   "read_only": 1,
+   "search_index": 1
   },
 
   {

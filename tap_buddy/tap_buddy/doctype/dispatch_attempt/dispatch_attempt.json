@@ -93,6 +93,13 @@
    "label": "Error Message",
    "fieldtype": "Small Text",
    "read_only": 1
+  },
+  {
+   "fieldname": "terminal_failure",
+   "label": "Terminal Failure",
+   "fieldtype": "Check",
+   "default": "0",
+   "read_only": 1
   }
  ],
 

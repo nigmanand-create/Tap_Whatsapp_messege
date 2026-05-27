@@ -17,7 +17,9 @@ def send_test_message(phone, message="Test message from TAP Buddy dev", dry_run=
     payload = {"phone": phone, "body": message}
 
     if dry_run:
-        print("DRY_RUN: would send", payload)
+        # Mask the phone number to avoid leaking test phone numbers into logs/terminals
+        _masked_phone = phone[:3] + "*" * max(0, len(phone) - 6) + phone[-3:] if phone and len(phone) > 6 else "***"
+        print("DRY_RUN: would send to", _masked_phone, "| message length:", len(message))
         return {"dry_run": True, "payload": payload}
 
     try:

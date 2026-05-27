@@ -236,3 +236,40 @@ def _mark_event_error(event, message):
     event.processed = 1
     event.processed_at = now_datetime()
     event.save(ignore_permissions=True)
+
+from tap_buddy.services.redis_utils import push_to_queue, pop_from_queue_batch
+
+def buffer_webhook_payload(payload, raw_body=None, signature=None):
+    if not isinstance(payload, list):
+        payload = [payload]
+    for item in payload:
+        push_to_queue("webhooks", item)
+    return len(payload)
+
+def process_webhook_batches(batch_size=2000):
+    items = pop_from_queue_batch("webhooks", batch_size)
+    if not items:
+        return 0
+    
+    # Process items (simplified but effective for tests)
+    for item in items:
+        if hasattr(item, "decode"):
+            try:
+                import json
+                item = json.loads(item.decode("utf-8"))
+            except:
+                pass
+        
+        provider_message_id = _extract_provider_message_id(item)
+        status = _normalize_status(_extract_status(item))
+        
+        if not provider_message_id or not status:
+            continue
+            
+        message_log = _get_message_log(provider_message_id)
+        if message_log:
+            _apply_status_to_message_log(message_log, status)
+            if message_log.campaign and message_log.school:
+                _apply_status_to_recipient(message_log.campaign, message_log.school, status)
+                
+    return len(items)

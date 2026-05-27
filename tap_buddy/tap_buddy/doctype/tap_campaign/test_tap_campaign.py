@@ -139,11 +139,12 @@ class IntegrationTestTAPCampaign(IntegrationTestCase):
 
 		with patch("tap_buddy.services.glific_client.GlificClient.send_message") as send_mock:
 			send_mock.return_value = {"id": "msg-101"}
-			from tap_buddy.tasks.scheduler import _dispatch_recipient
-
-			payload = frappe._dict({"name": recipient.name, "school": recipient.school, "retry_count": 0})
-			_dispatch_recipient(campaign, payload)
-			_dispatch_recipient(campaign, payload)
+			from tap_buddy.tasks.scheduler import dispatch_campaign
+			
+			frappe.db.set_value("Campaign Recipient", recipient.name, "status", "Pending")
+			frappe.db.set_value("TAP Campaign", campaign.name, "status", "Scheduled")
+			dispatch_campaign(campaign.name)
+			dispatch_campaign(campaign.name)
 
 		self.assertEqual(send_mock.call_count, 1)
 		attempts = frappe.db.count(
@@ -160,10 +161,12 @@ class IntegrationTestTAPCampaign(IntegrationTestCase):
 		recipient = _create_recipient(campaign.name, school.name, "Pending", 0)
 
 		from tap_buddy.tasks.scheduler import _dispatch_recipient
+		from tap_buddy.services.glific_client import GlificClient
+		client = GlificClient()
 
 		payload = frappe._dict({"name": recipient.name, "school": recipient.school, "retry_count": 0})
 		with patch("tap_buddy.tasks.scheduler._render_message", return_value=""):
-			_dispatch_recipient(campaign, payload)
+			_dispatch_recipient(client, campaign, payload)
 
 		retry_count = frappe.get_value("Campaign Recipient", recipient.name, "retry_count")
 		status = frappe.get_value("Campaign Recipient", recipient.name, "status")
@@ -242,6 +245,7 @@ def _set_settings(rate_limit=5):
 
 
 def _clear_rate_limit_bucket(at_time=None):
-	stamp = at_time or now_datetime()
-	bucket = stamp.strftime("%Y%m%d%H%M")
-	frappe.cache().delete_value(f"tap_buddy:dispatch_rate:{bucket}")
+	from tap_buddy.services.redis_utils import get_redis_conn, PREFIX
+	conn = get_redis_conn()
+	key = f"{PREFIX}rate_limit:dispatch_limit"
+	conn.delete(getattr(conn, "make_key", lambda x: x)(key) if hasattr(conn, "make_key") else key)

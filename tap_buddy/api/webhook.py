@@ -3,7 +3,7 @@ import hashlib
 
 import frappe
 
-from tap_buddy.services.webhook_processor import enqueue_webhook_events
+from tap_buddy.services.webhook_processor import buffer_webhook_payload
 
 
 @frappe.whitelist(allow_guest=True)
@@ -17,9 +17,9 @@ def handle():
     _validate_signature(raw_body, signature, settings.webhook_secret)
 
     payload = frappe.parse_json(raw_body) if raw_body else {}
-    event_names = enqueue_webhook_events(payload, raw_body, signature)
+    buffered_count = buffer_webhook_payload(payload, raw_body, signature)
 
-    return {"status": "ok", "events": len(event_names)}
+    return {"status": "ok", "buffered": buffered_count}
 
 
 def _get_signature(settings):

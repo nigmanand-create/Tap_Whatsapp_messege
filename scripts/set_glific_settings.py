@@ -46,23 +46,23 @@ if __name__ == "__main__":
     set_from_env()
 
 
-def apply_literal_values():
-    """One-off helper: apply the literal Glific settings provided by the user.
-
-    This function is intended to be invoked via `bench --site <site> execute
-    "tap_buddy.scripts.set_glific_settings.apply_literal_values"` and will
-    write the values directly into the `TAP Buddy Settings` single doc.
-    """
-    import frappe
-    s = frappe.get_single("TAP Buddy Settings")
-    # Values supplied by user (do not commit these values to source control)
-    s.glific_url = "https://api.tap.glific.com"
-    s.glific_token = "SFMyNTY.ZjdlMDJhNTYtYTFkMC00MTE1LWI2N2QtOTQyY2FkNjI0ZGMy.RpvepEvju7EM6Z8iFEUn8CZLXCgAAOypmef8JDCYcuU"
-    s.glific_access_token = "SFMyNTY.ZjdlMDJhNTYtYTFkMC00MTE1LWI2N2QtOTQyY2FkNjI0ZGMy.RpvepEvju7EM6Z8iFEUn8CZLXCgAAOypmef8JDCYcuU"
-    s.glific_refresh_token = "SFMyNTY.MjljZDQ3ZDMtZTNlMC00MzZkLWExZTAtNGYwNDdmMDIzMDQx.Tcb9e49Ts2w6z0p76g1sI_rpti04DsbipVBa8XypLYM"
-    s.glific_token_expiry = "2026-05-19T06:11:46.304907+00:00"
-    s.glific_phone_number = "919068076307"
-    s.webhook_secret = "Gf456@456"
-    s.save()
-    frappe.db.commit()
-    print("Applied literal Glific settings to TAP Buddy Settings")
+# ---------------------------------------------------------------------------
+# SECURITY NOTICE
+# ---------------------------------------------------------------------------
+# DO NOT add an `apply_literal_values()` function or any function that
+# hardcodes tokens, refresh tokens, webhook secrets, phone numbers, or any
+# other credentials in this file.
+#
+# This file is Git-tracked. Hardcoded secrets will be permanently embedded
+# in the repository history and will require a full git-filter-repo scrub
+# to remove.
+#
+# To bootstrap settings on a new site, use one of these patterns:
+#
+#   1. Environment variables (preferred):
+#        export GLIFIC_TOKEN="<value>"
+#        bench --site <site> execute "tap_buddy.scripts.set_glific_settings.set_from_env"
+#
+#   2. Manual entry via the Frappe UI:
+#        Desk > TAP Buddy Settings > (fill in the Password fields)
+# ---------------------------------------------------------------------------
