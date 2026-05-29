@@ -1,0 +1,10 @@
+import frappe
+frappe.init(site="tapbuddy.local")
+frappe.connect()
+settings = frappe.get_single("TAP Buddy Settings")
+print("access_token length:", len(settings.glific_access_token) if settings.glific_access_token else "None")
+print("token length:", len(settings.glific_token) if settings.glific_token else "None")
+at = settings.get_password("glific_access_token")
+print("safe access_token:", len(at) if at else "None", "val:", at)
+t = settings.get_password("glific_token")
+print("safe token:", len(t) if t else "None", "val:", t)
