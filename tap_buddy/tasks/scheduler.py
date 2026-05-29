@@ -6,11 +6,16 @@ from frappe.utils import get_datetime, get_time, now_datetime
 from tap_buddy.services.glific_client import GlificAPIError, GlificTerminalError, GlificClient
 from tap_buddy.services.recipients import build_campaign_recipients, get_recipient_context
 from tap_buddy.services.template_renderer import render_template
-from tap_buddy.services.webhook_processor import process_pending_events
+from tap_buddy.services.webhook_processor import process_webhook_batches
 from tap_buddy.services.glific_sync import sync_glific
 from tap_buddy.services.lms_ingestion import process_pending_lms_events as lms_process_pending_events
+from tap_buddy.services.lms_student_sync import sync_all_students as lms_sync_students
+from tap_buddy.services.lms_school_sync import sync_all_schools as lms_sync_schools
+from tap_buddy.services.lms_batch_sync import sync_all_batches as lms_sync_batches
+from tap_buddy.services.lms_assignment_polling import poll_assignment_events as lms_poll_assignments
 from tap_buddy.services.db_utils import get_pending_recipients_for_update, get_failed_recipients_for_update, mark_recipients_processing
 from tap_buddy.services.redis_utils import consume_token_bucket
+from frappe.utils import now_datetime
 
 from tap_buddy.utils.constants import (
     ATTEMPT_STATUS_FAILED,
@@ -33,6 +38,43 @@ from tap_buddy.utils.constants import (
 from tap_buddy.utils.phone import normalize_phone_number
 
 
+def sync_lms_schools():
+    """Hourly cron: sync schools from LMS and backfill student school links."""
+    try:
+        result = lms_sync_schools()
+        frappe.logger("scheduler").info(f"LMS school sync: {result}")
+    except Exception:
+        frappe.log_error(title="LMS School Sync — Scheduler Error", message=frappe.get_traceback())
+
+
+def sync_lms_batches():
+    """Hourly cron: sync batches from LMS."""
+    try:
+        result = lms_sync_batches()
+        frappe.logger("scheduler").info(f"LMS batch sync: {result}")
+    except Exception:
+        frappe.log_error(title="LMS Batch Sync — Scheduler Error", message=frappe.get_traceback())
+
+
+def poll_lms_assignments():
+    """Every 30-min cron: poll LMS assignments, detect missing submissions, send reminders."""
+    try:
+        result = lms_poll_assignments()
+        frappe.logger("scheduler").info(f"LMS assignment poll: {result}")
+    except Exception:
+        frappe.log_error(title="LMS Assignment Poll — Scheduler Error", message=frappe.get_traceback())
+
+
+def sync_lms_students():
+    """Hourly cron: pull students from LMS API and upsert into TAP Buddy."""
+    try:
+        result = lms_sync_students()
+        frappe.logger("scheduler").info(f"LMS student sync: {result}")
+    except Exception:
+        frappe.log_error(title="LMS Student Sync — Scheduler Error", message=frappe.get_traceback())
+
+
+@frappe.whitelist()
 def dispatch_campaign(campaign_name):
     """
     Background job to process and send messages for a TAP Campaign.
@@ -219,7 +261,7 @@ def process_pending_webhook_events():
     """
     Scheduled job to process pending webhook events.
     """
-    process_pending_events()
+    process_webhook_batches()
 
 
 def process_pending_lms_events():
@@ -239,7 +281,7 @@ def process_glific_sync():
 def _dispatch_recipient(client, campaign, recipient):
     school = frappe.get_doc("School", recipient.school)
     phone = normalize_phone_number(school.whatsapp_number)
-    
+
     if not phone:
         _mark_failed(recipient, "Missing WhatsApp number", increment_retry=False, terminal=True)
         return
@@ -251,37 +293,62 @@ def _dispatch_recipient(client, campaign, recipient):
 
     # Stable idempotency key: unique to the recipient intent, ignores retry counts.
     idempotency_key = f"tap_{campaign.name}_{recipient.name}"
-    
-    # Save the key back to the recipient doc for audit
     frappe.db.set_value("Campaign Recipient", recipient.name, "idempotency_key", idempotency_key)
 
     attempt_name = _create_dispatch_attempt(campaign, recipient, phone, message, idempotency_key)
 
+    # HSM fallback configuration — built once per recipient
+    hsm_template_name = _get_hsm_template_name(campaign)
+    hsm_parameters = _build_hsm_parameters(campaign, school) if hsm_template_name else None
+
     sent_at = now_datetime()
     try:
-        response = client.send_message(phone, message, idempotency_key=idempotency_key)
-        provider_id = _extract_provider_message_id(response)
-        
-        _update_dispatch_attempt_success(attempt_name, response, provider_id)
-        _create_message_log(campaign, school, phone, message, response, provider_id, REC_STATUS_SENT, sent_at)
-        
+        msg, used_hsm = client.send_message_with_hsm_fallback(
+            phone,
+            message,
+            hsm_template_name=hsm_template_name,
+            hsm_parameters=hsm_parameters,
+            idempotency_key=idempotency_key,
+        )
+        provider_id = _extract_provider_message_id(msg)
+
+        if used_hsm:
+            frappe.logger("tap_buddy_dispatch").info(
+                f"[DISPATCH] Recipient {recipient.name} sent via HSM fallback "
+                f"template={hsm_template_name} phone={phone} message_id={provider_id}"
+            )
+        else:
+            frappe.logger("tap_buddy_dispatch").info(
+                f"[DISPATCH] Recipient {recipient.name} sent via free-form "
+                f"phone={phone} message_id={provider_id}"
+            )
+
+        _update_dispatch_attempt_success(attempt_name, msg, provider_id)
+        _create_message_log(campaign, school, phone, message, msg, provider_id, REC_STATUS_SENT, sent_at)
+
         frappe.db.set_value(
             "Campaign Recipient",
             recipient.name,
             {"status": REC_STATUS_SENT, "sent_time": sent_at, "failure_reason": None},
         )
-        
+
     except GlificTerminalError as exc:
+        frappe.logger("tap_buddy_dispatch").error(
+            f"[DISPATCH] Terminal error for {recipient.name} phone={phone}: {exc}"
+        )
         _mark_failed(recipient, str(exc), attempt_name, terminal=True)
         _create_message_log(campaign, school, phone, message, {"error": str(exc)}, None, REC_STATUS_FAILED, None)
     except GlificAPIError as exc:
+        frappe.logger("tap_buddy_dispatch").warning(
+            f"[DISPATCH] Transient error for {recipient.name} phone={phone}: {exc}"
+        )
         _mark_failed(recipient, str(exc), attempt_name, terminal=False)
         _create_message_log(campaign, school, phone, message, {"error": str(exc)}, None, REC_STATUS_FAILED, None)
     except Exception as exc:
         frappe.log_error(title="Dispatch Error", message=frappe.get_traceback())
         _mark_failed(recipient, str(exc), attempt_name, terminal=False)
         _create_message_log(campaign, school, phone, message, {"error": str(exc)}, None, REC_STATUS_FAILED, None)
-    
+
     frappe.db.commit()
 
 
@@ -299,6 +366,61 @@ def _get_template_text(campaign):
             "WhatsApp Template", campaign.template, "message_body"
         )
     return ""
+
+
+def _get_hsm_template_name(campaign):
+    """
+    Return the Glific shortcode for the HSM template linked to this campaign.
+    Returns None if no template is configured or no shortcode is set.
+    """
+    if not campaign.template:
+        return None
+    shortcode = frappe.get_value("WhatsApp Template", campaign.template, "glific_template_id")
+    return shortcode or None
+
+
+def _build_hsm_parameters(campaign, school):
+    """
+    Build the ordered parameter list for the ``pta_meeting_alert_v2`` template:
+        [parent_name, student_name, meeting_date, meeting_time]
+
+    Values are pulled from the School document and campaign context.
+    Falls back to safe placeholders so the message always renders.
+    """
+    context = get_recipient_context(school.name)
+
+    parent_name  = (
+        context.get("parent_name")
+        or context.get("contact_name")
+        or school.school_name
+        or "Parent/Guardian"
+    )
+    student_name = (
+        context.get("student_name")
+        or context.get("child_name")
+        or "your ward"
+    )
+
+    # Pull date/time from campaign context or fall back to campaign send_date
+    meeting_date = context.get("meeting_date") or context.get("date")
+    meeting_time = context.get("meeting_time") or context.get("time")
+
+    if not meeting_date and campaign.send_date:
+        from frappe.utils import get_datetime, formatdate
+        dt = get_datetime(campaign.send_date)
+        if dt:
+            meeting_date = formatdate(dt.date(), "d MMMM yyyy")
+            meeting_time = dt.strftime("%I:%M %p").lstrip("0")
+
+    meeting_date = meeting_date or "TBD"
+    meeting_time = meeting_time or "TBD"
+
+    frappe.logger("tap_buddy_dispatch").info(
+        f"[HSM-PARAMS] school={school.name} "
+        f"parent={parent_name!r} student={student_name!r} "
+        f"date={meeting_date!r} time={meeting_time!r}"
+    )
+    return [str(parent_name), str(student_name), str(meeting_date), str(meeting_time)]
 
 
 def _create_message_log(campaign, school, phone, message, response, provider_id, status, sent_at):

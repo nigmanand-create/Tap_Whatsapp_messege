@@ -1,5 +1,8 @@
 import frappe
 import json
+import logging
+from dateutil import parser
+from datetime import datetime, timezone
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -109,8 +112,18 @@ class GlificClient:
         self.graphql_url = _derive_graphql_url(self.base_url)
         self.token = get_safe_password(settings, "glific_access_token") or get_safe_password(settings, "glific_token")
         self.primary_token = get_safe_password(settings, "glific_token")
-        self.refresh_token = get_safe_password(settings, "glific_refresh_token")
         self.token_expiry = getattr(settings, "glific_token_expiry", None)
+        self.base_url = settings.glific_url or "https://api.tap.glific.com/api/v1"
+        self.access_token = settings.glific_access_token
+        self.refresh_token = settings.glific_refresh_token
+        
+        # [MOCK INJECTION FOR CYPRESS E2E]
+        is_explicit_mock = bool(frappe.cache().get_value("mock_glific"))
+        if is_explicit_mock or (self.access_token and self.access_token == "*" * 100) or (settings.glific_token and settings.glific_token == "*" * 100):
+            frappe.logger("tap_buddy_glific").info("[MOCK] Glific API mock enabled for E2E tests.")
+            self._is_mock = True
+        else:
+            self._is_mock = False
 
         self.session = requests.Session()
         # Retry matrix: Exponential backoff for 429, 502, 503, 504
@@ -227,7 +240,9 @@ class GlificClient:
             "Accept": "application/json",
         }
         print(f"DEBUG: _perform_token_refresh -> url={url} refresh_token_present={bool(self.refresh_token)}")
+        response = None
         try:
+            self._log_auth_event("Refresh Started", "Attempting to refresh token via API.", "Info")
             print("DEBUG: _perform_token_refresh - sending POST")
             response = requests.post(url, headers=headers, json={}, timeout=10)
             print(f"DEBUG: _perform_token_refresh - got status {getattr(response,'status_code',None)}")
@@ -253,6 +268,7 @@ class GlificClient:
                 self.refresh_token = new_refresh_token or self.refresh_token
                 self.token_expiry = new_expiry
                 self.headers["Authorization"] = self.token
+                self._log_auth_event("Refresh Succeeded", f"Refreshed token successfully. New expiry: {new_expiry}", "Info")
                 print(f"DEBUG: _perform_token_refresh - refresh succeeded old_token={old_token[:8] if old_token else None} new_token={self.token[:8]}")
         except requests.exceptions.HTTPError as e:
             if getattr(response, 'status_code', None) == 401:
@@ -268,18 +284,64 @@ class GlificClient:
                     print("DEBUG: _perform_token_refresh - cleared invalid refresh token from settings")
                 except Exception as save_exc:
                     print(f"DEBUG: _perform_token_refresh - failed to clear refresh token from settings: {repr(save_exc)}")
+            
+            self._log_auth_event("Refresh Failed", f"Token refresh failed (HTTP {getattr(response, 'status_code', 'unknown')}): {str(e)}", "Error")
             frappe.logger("tap_buddy_glific").error(f"Token refresh failed: {str(e)}")
             print(f"DEBUG: _perform_token_refresh exception: {repr(e)}")
         except requests.exceptions.RequestException as e:
+            self._log_auth_event("Refresh Failed", f"Token refresh request failed: {str(e)}", "Error")
             frappe.logger("tap_buddy_glific").error(f"Token refresh failed: {str(e)}")
             print(f"DEBUG: _perform_token_refresh exception: {repr(e)}")
             # Do not throw yet; let the actual API call attempt with the old token 
             # and fail naturally if it truly is expired.
+            # and fail naturally if it truly is expired.
+
+    def _log_auth_event(self, event, message, severity):
+        try:
+            countdown = 0
+            if self.token_expiry:
+                try:
+                    expiry_dt = parser.parse(self.token_expiry)
+                    now = datetime.now(expiry_dt.tzinfo or timezone.utc)
+                    countdown = int((expiry_dt - now).total_seconds() / 60)
+                except Exception:
+                    pass
+            doc = frappe.get_doc({
+                "doctype": "Glific Auth Log",
+                "event": event,
+                "message": str(message)[:1000],
+                "severity": severity,
+                "expiry_countdown": countdown,
+                "timestamp": frappe.utils.now_datetime()
+            })
+            doc.insert(ignore_permissions=True)
+            frappe.db.commit()
+        except Exception as e:
+            print(f"DEBUG: Failed to log auth event: {e}")
 
     def _graphql_request(self, query, variables=None):
         if check_circuit_breaker("glific"):
             frappe.logger("tap_buddy_glific").error("Circuit breaker is OPEN. Dropping request.")
             raise GlificAPIError("Glific circuit breaker is open. Temporarily unavailable.")
+
+        if getattr(self, "_is_mock", False):
+            if "createAndSendMessage" in query:
+                return {"createAndSendMessage": {"message": {"id": "mock_123", "status": "sent"}}}
+            if "sendHsmMessage" in query:
+                return {"sendHsmMessage": {"message": {"id": "mock_msg_123", "bspStatus": "sent", "bspMessageId": "mock_bsp_id", "insertedAt": "2026-05-01T00:00:00"}}}
+            if "sessionTemplates" in query:
+                shortcode = variables.get("filter", {}).get("term", "mock") if variables else "mock"
+                return {"sessionTemplates": [{"id": "mock_tmpl_123", "shortcode": shortcode, "status": "APPROVED", "numberParameters": 4}]}
+            if "optinContact" in query:
+                return {"optinContact": {"contact": {"id": "mock_contact_123", "bspStatus": "OPTED_IN"}}}
+            if "contactByPhone" in query or "contact(" in query:
+                return {"contactByPhone": {"contact": {"id": "mock_contact_123"}}, "contact": {"id": "mock_contact_123"}}
+            if "createContact" in query:
+                return {"createContact": {"contact": {"id": "mock_contact_123"}}}
+            if "createSessionTemplate" in query:
+                return {"createSessionTemplate": {"template": {"id": "mock_tmpl_123", "shortcode": variables.get("input", {}).get("shortcode", "mock"), "status": "PENDING"}}}
+            if "languages(" in query:
+                return {"languages": [{"id": "1", "label": "English", "locale": "en", "isActive": True}]}
 
         self.ensure_valid_token()
 
@@ -555,6 +617,338 @@ class GlificClient:
                         raise GlificTerminalError(f"Terminal Glific Error: 200 - {_serialize_graphql_errors(errors)}")
                 return result.get("message") or {}
 
+    # ------------------------------------------------------------------
+    # Template discovery
+    # ------------------------------------------------------------------
+
+    def get_template_by_name(self, template_name):
+        """
+        Look up a Glific HSM session template by its shortcode / element name.
+
+        Results are cached on the client instance for the lifetime of the
+        object (one dispatch batch) to avoid repeated GraphQL round-trips.
+
+        Returns a dict with at minimum: ``{"id": "...", "shortcode": "...",
+        "numberParameters": N, "status": "APPROVED"}``
+        Raises ``GlificTerminalError`` if the template is not found or not APPROVED.
+        """
+        if not hasattr(self, "_template_cache"):
+            self._template_cache = {}
+
+        if template_name in self._template_cache:
+            return self._template_cache[template_name]
+
+        frappe.logger("tap_buddy_glific").info(
+            f"[HSM] Looking up template shortcode='{template_name}'"
+        )
+
+        query = """
+        query sessionTemplates($filter: SessionTemplateFilter, $opts: Opts) {
+            sessionTemplates(filter: $filter, opts: $opts) {
+                id
+                label
+                body
+                shortcode
+                status
+                category
+                numberParameters
+                isHsm
+            }
+        }
+        """
+        data = self._graphql_request(
+            query,
+            {"filter": {"term": template_name}, "opts": {"limit": 10}},
+        )
+        templates = data.get("sessionTemplates") or []
+
+        # Filter by exact shortcode match
+        matched = [
+            t for t in templates
+            if (t.get("shortcode") or "").lower() == template_name.lower()
+        ]
+
+        if not matched:
+            frappe.logger("tap_buddy_glific").error(
+                f"[HSM] Template not found: '{template_name}'"
+            )
+            raise GlificTerminalError(
+                f"Glific template '{template_name}' not found. "
+                f"Available shortcodes: {[t.get('shortcode') for t in templates]}"
+            )
+
+        tmpl = matched[0]
+        if tmpl.get("status") != "APPROVED":
+            raise GlificTerminalError(
+                f"Glific template '{template_name}' is not APPROVED (status={tmpl.get('status')}). "
+                "Cannot send HSM messages."
+            )
+
+        frappe.logger("tap_buddy_glific").info(
+            f"[HSM] Template resolved: shortcode={template_name} id={tmpl['id']} "
+            f"label='{tmpl.get('label')}' params={tmpl.get('numberParameters')}"
+        )
+        self._template_cache[template_name] = tmpl
+        return tmpl
+
+    # ------------------------------------------------------------------
+    # Contact optin
+    # ------------------------------------------------------------------
+
+    def optin_contact(self, phone, name=None):
+        """
+        Opt a contact in to HSM messaging via Glific's ``optinContact`` mutation.
+        Required before ``sendHsmMessage`` can be used for a new contact.
+        Idempotent — safe to call even if the contact is already opted in.
+
+        Returns the updated contact dict (includes ``bspStatus``).
+        """
+        phone = normalize_phone(phone)
+        frappe.logger("tap_buddy_glific").info(
+            f"[HSM] Opting in contact phone={phone} name={name!r}"
+        )
+        mutation = """
+        mutation optinContact($phone: String!, $name: String) {
+            optinContact(phone: $phone, name: $name) {
+                contact { id phone bspStatus optinTime }
+                errors { key message }
+            }
+        }
+        """
+        result = self._graphql_request(mutation, {"phone": phone, "name": name or phone}).get("optinContact") or {}
+        errors = result.get("errors")
+        if errors:
+            frappe.logger("tap_buddy_glific").warning(
+                f"[HSM] optinContact errors for {phone}: {_serialize_graphql_errors(errors)}"
+            )
+        contact = result.get("contact") or {}
+        frappe.logger("tap_buddy_glific").info(
+            f"[HSM] After optin: contact id={contact.get('id')} bspStatus={contact.get('bspStatus')}"
+        )
+        return contact
+
+    # ------------------------------------------------------------------
+    # PTA HSM template sender
+    # ------------------------------------------------------------------
+
+    def send_pta_template(
+        self,
+        phone,
+        parent_name,
+        student_name,
+        meeting_date,
+        meeting_time,
+        template_name="pta_meeting_alert_v2",
+    ):
+        """
+        Send the approved PTA meeting notification HSM template.
+
+        Parameter mapping (as approved by WhatsApp):
+            {{1}} -> parent_name
+            {{2}} -> student_name
+            {{3}} -> meeting_date   (e.g. "28 May 2026")
+            {{4}} -> meeting_time   (e.g. "10:00 AM")
+
+        Flow:
+            1. Resolve template ID from shortcode
+            2. Resolve / create Glific contact
+            3. Ensure contact is opted-in for HSM (idempotent)
+            4. Send via sendHsmMessage
+            5. Log full request + response
+
+        Returns the Glific message dict on success.
+        Raises ``GlificTerminalError`` for non-retryable errors.
+        Raises ``GlificAPIError`` for transient errors.
+        """
+        phone_norm = normalize_phone(phone)
+        parameters = [parent_name, student_name, meeting_date, meeting_time]
+
+        frappe.logger("tap_buddy_glific").info(
+            f"[PTA-HSM] Initiating send "
+            f"phone={phone_norm} template={template_name} "
+            f"params={parameters}"
+        )
+
+        # Step 1: Validate template exists and is approved
+        tmpl = self.get_template_by_name(template_name)
+        template_id = tmpl["id"]
+        expected_params = tmpl.get("numberParameters", 4)
+
+        if len(parameters) != expected_params:
+            raise GlificTerminalError(
+                f"Template '{template_name}' expects {expected_params} parameters "
+                f"but got {len(parameters)}: {parameters}"
+            )
+
+        # Step 2: Resolve contact
+        contact = self.get_contact(phone_norm)
+        contact_id = _extract_contact_id(contact)
+        if not contact_id:
+            frappe.logger("tap_buddy_glific").info(
+                f"[PTA-HSM] Contact not found for {phone_norm}, creating"
+            )
+            created = self.create_contact({"name": phone_norm, "phone": phone_norm})
+            contact_id = _extract_contact_id(created)
+        if not contact_id:
+            raise GlificAPIError(
+                f"[PTA-HSM] Unable to resolve Glific contact for phone {phone_norm}"
+            )
+
+        frappe.logger("tap_buddy_glific").info(
+            f"[PTA-HSM] Resolved contact_id={contact_id} for phone={phone_norm}"
+        )
+
+        # Step 3: Ensure contact is opted in (HSM bspStatus)
+        self.optin_contact(phone_norm)
+
+        # Step 4: Send HSM
+        query = """
+        mutation sendHsmMessage($receiverId: ID!, $templateId: ID!, $parameters: [String]) {
+            sendHsmMessage(receiverId: $receiverId, templateId: $templateId, parameters: $parameters) {
+                message {
+                    id
+                    bspMessageId
+                    bspStatus
+                    body
+                    type
+                    isHsm
+                    insertedAt
+                    receiver { phone }
+                }
+                errors { key message }
+            }
+        }
+        """
+        variables = {
+            "receiverId": str(contact_id),
+            "templateId": str(template_id),
+            "parameters": parameters,
+        }
+
+        frappe.logger("tap_buddy_glific").info(
+            f"[PTA-HSM] GraphQL sendHsmMessage payload: "
+            f"receiverId={contact_id} templateId={template_id} parameters={parameters}"
+        )
+
+        result = self._graphql_request(query, variables).get("sendHsmMessage") or {}
+        errors = result.get("errors")
+
+        if errors:
+            err_str = _serialize_graphql_errors(errors)
+            frappe.logger("tap_buddy_glific").error(
+                f"[PTA-HSM] GraphQL errors for phone={phone_norm}: {err_str}"
+            )
+            raise GlificTerminalError(f"PTA HSM send failed: {err_str}")
+
+        message = result.get("message") or {}
+        frappe.logger("tap_buddy_glific").info(
+            f"[PTA-HSM] SUCCESS phone={phone_norm} "
+            f"message_id={message.get('id')} "
+            f"bspMessageId={message.get('bspMessageId')} "
+            f"bspStatus={message.get('bspStatus')} "
+            f"insertedAt={message.get('insertedAt')}"
+        )
+        return message
+
+    # ------------------------------------------------------------------
+    # Smart sender: free-form with automatic HSM fallback
+    # ------------------------------------------------------------------
+
+    def send_message_with_hsm_fallback(
+        self,
+        phone,
+        message,
+        hsm_template_name=None,
+        hsm_parameters=None,
+        idempotency_key=None,
+    ):
+        """
+        Attempt free-form messaging first; if the WhatsApp 24-hour session
+        window is closed, automatically fall back to the HSM template.
+
+        Args:
+            phone:              Recipient phone (any format — will be normalised)
+            message:            Free-form message body
+            hsm_template_name:  Glific shortcode of the fallback HSM template
+            hsm_parameters:     Ordered list of parameter strings for the template
+            idempotency_key:    Passed to the free-form send path
+
+        Returns:
+            (message_dict, used_hsm: bool)
+        """
+        _24HR_WINDOW_ERROR = "24 hrs window closed"
+
+        frappe.logger("tap_buddy_glific").info(
+            f"[SEND] Attempting free-form send to phone={normalize_phone(phone)}"
+        )
+        try:
+            msg = self.send_message(phone, message, idempotency_key=idempotency_key)
+            frappe.logger("tap_buddy_glific").info(
+                f"[SEND] Free-form send SUCCESS message_id={msg.get('id')}"
+            )
+            return msg, False
+
+        except GlificTerminalError as exc:
+            if _24HR_WINDOW_ERROR.lower() not in str(exc).lower():
+                # Non-window terminal error — do not fall back, re-raise
+                raise
+
+            if not hsm_template_name or not hsm_parameters:
+                frappe.logger("tap_buddy_glific").warning(
+                    f"[SEND] 24hr window closed for {phone} and no HSM fallback configured."
+                )
+                raise
+
+            frappe.logger("tap_buddy_glific").info(
+                f"[SEND] 24hr window closed for {phone}. "
+                f"Falling back to HSM template='{hsm_template_name}' "
+                f"parameters={hsm_parameters}"
+            )
+
+            # Ensure correct number of params
+            tmpl = self.get_template_by_name(hsm_template_name)
+            template_id = tmpl["id"]
+
+            phone_norm = normalize_phone(phone)
+            contact = self.get_contact(phone_norm)
+            contact_id = _extract_contact_id(contact)
+            if not contact_id:
+                created = self.create_contact({"name": phone_norm, "phone": phone_norm})
+                contact_id = _extract_contact_id(created)
+            if not contact_id:
+                raise GlificAPIError(f"Cannot resolve contact for HSM fallback: {phone_norm}")
+
+            self.optin_contact(phone_norm)
+
+            hsm_query = """
+            mutation sendHsmMessage($receiverId: ID!, $templateId: ID!, $parameters: [String]) {
+                sendHsmMessage(receiverId: $receiverId, templateId: $templateId, parameters: $parameters) {
+                    message { id bspMessageId bspStatus body type isHsm insertedAt receiver { phone } }
+                    errors { key message }
+                }
+            }
+            """
+            variables = {
+                "receiverId": str(contact_id),
+                "templateId": str(template_id),
+                "parameters": hsm_parameters,
+            }
+            result = self._graphql_request(hsm_query, variables).get("sendHsmMessage") or {}
+            errors = result.get("errors")
+            if errors:
+                err_str = _serialize_graphql_errors(errors)
+                frappe.logger("tap_buddy_glific").error(
+                    f"[SEND] HSM fallback errors for {phone_norm}: {err_str}"
+                )
+                raise GlificTerminalError(f"HSM fallback failed: {err_str}")
+
+            msg = result.get("message") or {}
+            frappe.logger("tap_buddy_glific").info(
+                f"[SEND] HSM fallback SUCCESS phone={phone_norm} "
+                f"message_id={msg.get('id')} bspStatus={msg.get('bspStatus')}"
+            )
+            return msg, True
+
     def get_contact(self, phone):
                 print(f"DEBUG: get_contact called phone={phone}")
                 query = """
@@ -726,6 +1120,99 @@ class GlificClient:
                 if group:
                         group.setdefault("name", group.get("label"))
                 return group
+
+    # ------------------------------------------------------------------
+    # HSM Template management
+    # ------------------------------------------------------------------
+
+    def get_languages(self):
+        """Return available languages from Glific with their IDs."""
+        query = """
+        query languages($filter: LanguageFilter, $opts: Opts) {
+            languages(filter: $filter, opts: $opts) {
+                id
+                label
+                locale
+                isActive
+            }
+        }
+        """
+        result = self._graphql_request(query, {"filter": {}, "opts": {"limit": 50}})
+        return result.get("languages") or []
+
+    def create_hsm_template(
+        self,
+        label: str,
+        shortcode: str,
+        body: str,
+        language: str = "English",
+        category: str = "UTILITY",
+    ) -> dict:
+        """Register a new HSM template in Glific via createSessionTemplate.
+
+        Returns dict with: id, label, shortcode, body, status.
+        NOTE: Status will be PENDING until WhatsApp/Meta approves (24-48h).
+        """
+        langs = self.get_languages()
+        lang_map = {l["label"].lower(): l["id"] for l in langs}
+        lang_id = lang_map.get(language.lower())
+        if not lang_id:
+            lang_id = langs[0]["id"] if langs else "1"
+            frappe.logger("tap_buddy_glific").warning(
+                f"[HSM-CREATE] Language '{language}' not found, using id={lang_id}. "
+                f"Available: {list(lang_map.keys())}"
+            )
+
+        frappe.logger("tap_buddy_glific").info(
+            f"[HSM-CREATE] Creating template shortcode='{shortcode}' "
+            f"language={language}({lang_id}) category={category}"
+        )
+
+        mutation = """
+        mutation createSessionTemplate($input: SessionTemplateInput!) {
+            createSessionTemplate(input: $input) {
+                sessionTemplate {
+                    id
+                    label
+                    body
+                    shortcode
+                    status
+                    category
+                    isHsm
+                    numberParameters
+                    language { id label }
+                }
+                errors { key message }
+            }
+        }
+        """
+        variables = {
+            "input": {
+                "label":      label,
+                "shortcode":  shortcode.lower().replace(" ", "_"),
+                "body":       body,
+                "languageId": str(lang_id),
+                "type":       "TEXT",
+                "category":   category,
+                "isHsm":      True,
+            }
+        }
+
+        result = self._graphql_request(mutation, variables).get("createSessionTemplate") or {}
+        errors = result.get("errors")
+        if errors:
+            err_str = _serialize_graphql_errors(errors)
+            frappe.logger("tap_buddy_glific").error(
+                f"[HSM-CREATE] createSessionTemplate errors: {err_str}"
+            )
+            raise GlificTerminalError(f"HSM template creation failed: {err_str}")
+
+        tmpl = result.get("sessionTemplate") or {}
+        frappe.logger("tap_buddy_glific").info(
+            f"[HSM-CREATE] Template created id={tmpl.get('id')} "
+            f"shortcode={tmpl.get('shortcode')} status={tmpl.get('status')}"
+        )
+        return tmpl
 
 
 def _extract_contact_id(response):

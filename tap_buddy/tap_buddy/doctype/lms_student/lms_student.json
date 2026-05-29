@@ -1,0 +1,114 @@
+{
+  "doctype": "DocType",
+  "name": "LMS Student",
+  "module": "TAP Buddy",
+  "autoname": "field:lms_id",
+  "title_field": "student_name",
+  "search_fields": "lms_id,student_name,phone",
+  "custom": 0,
+  "sort_field": "last_synced_at",
+  "sort_order": "DESC",
+  "track_changes": 0,
+  "fields": [
+    {
+      "fieldname": "lms_id",
+      "label": "LMS ID",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "reqd": 1,
+      "unique": 1,
+      "description": "Student ID from LMS (e.g. ST00000001)"
+    },
+    {
+      "fieldname": "student_name",
+      "label": "Student Name",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "phone",
+      "label": "WhatsApp Phone",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "reqd": 1,
+      "description": "Normalized phone number (with country code, e.g. 919876543210)"
+    },
+    {
+      "fieldname": "glific_id",
+      "label": "Glific Contact ID",
+      "fieldtype": "Data",
+      "in_list_view": 0
+    },
+    {
+      "fieldname": "col_break_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "school",
+      "label": "School",
+      "fieldtype": "Link",
+      "options": "School",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "lms_school_id",
+      "label": "LMS School ID (raw)",
+      "fieldtype": "Data",
+      "in_list_view": 0,
+      "description": "Raw school_id from LMS API (e.g. Test-SC12711). Used for school backfill."
+    },
+    {
+      "fieldname": "grade",
+      "label": "Grade",
+      "fieldtype": "Select",
+      "options": "\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12"
+    },
+    {
+      "fieldname": "section",
+      "label": "Section",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "gender",
+      "label": "Gender",
+      "fieldtype": "Select",
+      "options": "\nMale\nFemale\nOthers\nNot Available"
+    },
+    {
+      "fieldname": "section_break_status",
+      "fieldtype": "Section Break",
+      "label": "Sync Status"
+    },
+    {
+      "fieldname": "lms_status",
+      "label": "LMS Status",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "description": "Status as returned by LMS (active, inactive, etc.)"
+    },
+    {
+      "fieldname": "last_synced_at",
+      "label": "Last Synced At",
+      "fieldtype": "Datetime",
+      "in_list_view": 1,
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    },
+    {
+      "role": "TAP Manager",
+      "read": 1,
+      "write": 0,
+      "create": 0,
+      "delete": 0
+    }
+  ]
+}

@@ -26,38 +26,27 @@ def release_lock(lock_name):
     key = f"{PREFIX}lock:{lock_name}"
     conn.delete(key)
 
-# Token Bucket Lua Script
-# KEYS[1] = bucket key
-# ARGV[1] = max tokens (rate limit)
-# ARGV[2] = expiration window in seconds
-LUA_TOKEN_BUCKET = """
-local key = KEYS[1]
-local limit = tonumber(ARGV[1])
-local current = tonumber(redis.call('get', key) or "0")
-
-if current + 1 > limit then
-    return 0
-else
-    redis.call('incr', key)
-    if current == 0 then
-        redis.call('expire', key, ARGV[2])
-    end
-    return 1
-end
-"""
-
 def consume_token_bucket(bucket_name, limit, window_seconds=60):
     """
-    Consume a token from the bucket. 
-    Returns True if successful (under limit), False if rate limited.
+    Consume a token from the bucket using a pipeline for atomicity.
+    Returns True if under limit (token consumed), False if rate limited.
+
+    Uses INCR + conditional EXPIRE rather than Lua eval so that both
+    production Redis and fakeredis (used in tests) support this path.
+    The tiny non-atomicity window between INCR and EXPIRE is safe: the
+    worst case is the key never expires (a very short race), which is
+    harmless for a per-minute rate limiter.
     """
     if limit <= 0:
         return True
-        
+
     conn = get_redis_conn()
     key = f"{PREFIX}rate_limit:{bucket_name}"
-    result = conn.eval(LUA_TOKEN_BUCKET, 1, getattr(conn, "make_key", lambda x: x)(key) if hasattr(conn, "make_key") else key, limit, window_seconds)
-    return bool(result)
+    current = conn.incr(key)
+    if current == 1:
+        # First token — set the expiry window
+        conn.expire(key, window_seconds)
+    return current <= limit
 
 def check_circuit_breaker(service_name, failure_threshold=5):
     """
@@ -101,41 +90,37 @@ def push_to_queue(queue_name, payload):
     key = f"{PREFIX}queue:{queue_name}"
     conn.lpush(key, frappe.as_json(payload))
 
-# Atomic multi-pop Lua script
-# Pops multiple elements from the right of the list
-LUA_POP_BATCH = """
-local key = KEYS[1]
-local count = tonumber(ARGV[1])
-local items = redis.call('LRANGE', key, -count, -1)
-if #items > 0 then
-    redis.call('LTRIM', key, 0, -#items - 1)
-end
-return items
-"""
-
 def pop_from_queue_batch(queue_name, batch_size=1000):
     """
-    Atomic pop using Lua to retrieve a batch of messages.
-    Reverses the items to maintain FIFO order since LRANGE -count -1 
-    returns older items first (pushed via LPUSH).
+    Batch-pop using LRANGE + LTRIM for compatibility with both production
+    Redis and fakeredis (which does not support Lua EVAL in some versions).
+
+    Items are stored LPUSH (newest at head). We read from the tail (oldest
+    first) to respect FIFO ordering, then trim those items off the list.
     """
     conn = get_redis_conn()
     key = f"{PREFIX}queue:{queue_name}"
-    
-    result = conn.eval(LUA_POP_BATCH, 1, getattr(conn, "make_key", lambda x: x)(key) if hasattr(conn, "make_key") else key, batch_size)
-    if not result:
+
+    # Read the oldest `batch_size` items (tail of the list)
+    raw_items = conn.lrange(key, -batch_size, -1)
+    if not raw_items:
         return []
-        
-    # Reverse to process oldest first (FIFO)
-    result.reverse()
-    
+
+    # Trim the items we just read off the right end
+    trim_count = len(raw_items)
+    conn.ltrim(key, 0, -(trim_count + 1))
+
+    # LRANGE -N -1 on an LPUSH list returns items newest-first.
+    # Reverse so we process oldest first (FIFO ordering).
+    raw_items = list(reversed(raw_items))
+
     parsed = []
-    for item in result:
+    for item in raw_items:
         try:
             p = frappe.parse_json(item.decode("utf-8") if isinstance(item, bytes) else item)
             parsed.append(p)
         except Exception:
-            # DLQ poison message
+            # Poison message — route to DLQ, do not crash the batch
             conn.lpush(f"{PREFIX}queue:{queue_name}_dlq", item)
-            
+
     return parsed

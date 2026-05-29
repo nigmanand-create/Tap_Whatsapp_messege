@@ -11,7 +11,9 @@
   "state",
   "district",
   "udise_code",
-  "block"
+  "block",
+  "lms_id",
+  "lms_school_status"
  ],
  "fields": [
   {
@@ -32,8 +34,7 @@
   {
    "fieldname": "whatsapp_number",
    "fieldtype": "Phone",
-   "label": "WhatsApp Number",
-   "reqd": 1
+   "label": "WhatsApp Number"
   },
   {
    "fieldname": "state",
@@ -56,6 +57,19 @@
    "fieldname": "block",
    "fieldtype": "Data",
    "label": "Block"
+  },
+  {
+   "fieldname": "lms_id",
+   "fieldtype": "Data",
+   "label": "LMS School ID",
+   "unique": 0,
+   "description": "School name/ID from LMS (e.g. Test-SC12711)"
+  },
+  {
+   "fieldname": "lms_school_status",
+   "fieldtype": "Data",
+   "label": "LMS Status",
+   "read_only": 1
   }
  ],
  "links": [],

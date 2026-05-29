@@ -1,0 +1,13 @@
+{
+  "name": "tap-buddy-cypress",
+  "version": "1.0.0",
+  "description": "Cypress E2E tests for TAP Buddy",
+  "scripts": {
+    "cy:open": "cypress open --config-file cypress.config.js",
+    "cy:run": "cypress run --config-file cypress.config.js",
+    "cy:run:spec": "cypress run --config-file cypress.config.js --spec 'tap_buddy/tests/ui/tap_campaign_spec.js'"
+  },
+  "devDependencies": {
+    "cypress": "^13.17.0"
+  }
+}

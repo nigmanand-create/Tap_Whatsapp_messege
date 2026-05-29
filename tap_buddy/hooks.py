@@ -158,12 +158,16 @@ scheduler_events = {
 		],
 		"0,30 * * * *": [
 			"tap_buddy.tasks.scheduler.retry_failed_messages",
+			"tap_buddy.tasks.scheduler.poll_lms_assignments",
 		]
 	},
 	"hourly": [
 		"tap_buddy.tasks.scheduler.sweep_stale_campaigns",
 		"tap_buddy.tasks.scheduler.sync_campaign_counts",
-		"tap_buddy.tasks.scheduler.process_glific_sync"
+		"tap_buddy.tasks.scheduler.process_glific_sync",
+		"tap_buddy.tasks.scheduler.sync_lms_schools",
+		"tap_buddy.tasks.scheduler.sync_lms_batches",
+		"tap_buddy.tasks.scheduler.sync_lms_students",
 	],
 }
 
@@ -247,4 +251,10 @@ scheduler_events = {
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
+
+scheduler_events = {
+    "hourly": [
+        "tap_buddy.tap_buddy.doctype.tap_buddy_settings.tap_buddy_settings.scheduled_health_check"
+    ]
+}
 

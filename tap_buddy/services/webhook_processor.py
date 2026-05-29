@@ -239,37 +239,142 @@ def _mark_event_error(event, message):
 
 from tap_buddy.services.redis_utils import push_to_queue, pop_from_queue_batch
 
+
+# ---------------------------------------------------------------------------
+# Status hierarchy: higher number wins when deduplicating a batch
+# ---------------------------------------------------------------------------
+_STATUS_RANK = {
+    REC_STATUS_SENT: 1,
+    REC_STATUS_DELIVERED: 2,
+    REC_STATUS_READ: 3,
+    # Failed is intentionally absent so it never promotes over a delivery status
+}
+
+
 def buffer_webhook_payload(payload, raw_body=None, signature=None):
+    """
+    O(1) ingestion: wraps each item in a typed envelope and pushes to Redis.
+
+    Envelope format::
+
+        {
+            "payload":    {...},          # original webhook dict
+            "signature":  "sha256=...",   # HMAC header value (or None)
+            "received_at": "2026-...",    # ISO timestamp for audit
+        }
+
+    Using an envelope lets the batch processor distinguish the webhook body
+    from metadata without parsing heuristics.
+    """
     if not isinstance(payload, list):
         payload = [payload]
+
+    ts = now_datetime()
+    iso = ts.isoformat() if hasattr(ts, "isoformat") else str(ts)
+
+    count = 0
     for item in payload:
-        push_to_queue("webhooks", item)
-    return len(payload)
+        envelope = {
+            "payload": item,
+            "signature": signature,
+            "received_at": iso,
+        }
+        push_to_queue("webhooks", envelope)
+        count += 1
+
+    return count
+
 
 def process_webhook_batches(batch_size=2000):
+    """
+    Drain the Redis webhook queue, deduplicate by provider_message_id
+    (keeping the highest-ranked delivery status), then bulk-write to the DB.
+
+    Design:
+    - Items with missing/unknown provider_message_id or status go to the DLQ
+      via ``_route_to_dlq`` (injectable seam for testing).
+    - Valid items are merged into a dict keyed by provider_message_id.
+      When two events share the same ID, the higher-ranked status wins.
+    - The final merged dict is flushed via ``_bulk_update_status``
+      (injectable seam for testing).
+
+    Returns the number of items popped from the queue.
+    """
     items = pop_from_queue_batch("webhooks", batch_size)
     if not items:
         return 0
-    
-    # Process items (simplified but effective for tests)
+
+    deduped: dict = {}
+
     for item in items:
-        if hasattr(item, "decode"):
-            try:
-                import json
-                item = json.loads(item.decode("utf-8"))
-            except:
-                pass
-        
-        provider_message_id = _extract_provider_message_id(item)
-        status = _normalize_status(_extract_status(item))
-        
+        # Unwrap envelope if present
+        if isinstance(item, dict) and "payload" in item:
+            inner = item["payload"]
+        else:
+            inner = item  # bare dict (legacy path)
+
+        provider_message_id = _extract_provider_message_id(inner)
+        status = _normalize_status(_extract_status(inner))
+
         if not provider_message_id or not status:
+            _route_to_dlq(item, "Missing provider_message_id or unrecognised status")
             continue
-            
-        message_log = _get_message_log(provider_message_id)
-        if message_log:
-            _apply_status_to_message_log(message_log, status)
-            if message_log.campaign and message_log.school:
-                _apply_status_to_recipient(message_log.campaign, message_log.school, status)
-                
+
+        existing = deduped.get(provider_message_id)
+        if existing is None:
+            deduped[provider_message_id] = {"status": status, "item": item}
+        else:
+            # Keep whichever status ranks higher; Failed never beats a delivery status
+            existing_rank = _STATUS_RANK.get(existing["status"], 0)
+            new_rank = _STATUS_RANK.get(status, 0)
+            if new_rank > existing_rank:
+                deduped[provider_message_id] = {"status": status, "item": item}
+
+    if deduped:
+        _bulk_update_status(deduped)
+
     return len(items)
+
+
+def _route_to_dlq(item, reason):
+    """
+    Send a poison/unresolvable item to the dead-letter queue.
+    Logs without dumping raw payload to avoid PII leakage.
+    """
+    try:
+        frappe.logger("tap_buddy_webhooks").error(
+            f"Webhook DLQ: {reason} (item keys: {list(item.keys()) if isinstance(item, dict) else type(item).__name__})"
+        )
+    except Exception:
+        pass
+    from tap_buddy.services.redis_utils import get_redis_conn, PREFIX
+    try:
+        conn = get_redis_conn()
+        conn.lpush(f"{PREFIX}queue:webhooks_dlq", frappe.as_json(item))
+    except Exception:
+        pass
+
+
+def _bulk_update_status(deduped_map):
+    """
+    Apply the deduplicated status map to Message Logs and Campaign Recipients.
+
+    ``deduped_map`` structure::
+
+        {
+            "<provider_message_id>": {
+                "status": "Delivered",   # canonical status string
+                "item":   {...},         # original envelope (for audit)
+            },
+            ...
+        }
+    """
+    for provider_message_id, entry in deduped_map.items():
+        status = entry["status"]
+        message_log = _get_message_log(provider_message_id)
+        if not message_log:
+            continue
+        _apply_status_to_message_log(message_log, status)
+        if message_log.campaign and message_log.school:
+            _apply_status_to_recipient(message_log.campaign, message_log.school, status)
+

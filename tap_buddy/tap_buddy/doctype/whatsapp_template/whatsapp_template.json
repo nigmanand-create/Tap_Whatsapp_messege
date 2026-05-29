@@ -19,12 +19,90 @@
    "in_list_view": 1,
    "bold": 1
   },
-
   {
    "fieldname": "message",
    "fieldtype": "Small Text",
-   "label": "Message",
+   "label": "Message Body",
+   "reqd": 1,
+   "description": "Use {{1}}, {{2}}, ... for variable placeholders"
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "glific_shortcode",
+   "fieldtype": "Data",
+   "label": "Glific Shortcode (Element Name)",
+   "description": "Unique lowercase identifier used in Glific (e.g. pta_meeting_alert_v2). Auto-generated from template name if blank.",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "language",
+   "fieldtype": "Select",
+   "label": "Language",
+   "options": "English\nHindi\nMarathi",
+   "default": "English",
    "reqd": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "label": "Category",
+   "options": "UTILITY\nMARKETING\nAUTHENTICATION",
+   "default": "UTILITY",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_glific",
+   "fieldtype": "Section Break",
+   "label": "Glific Sync"
+  },
+  {
+   "fieldname": "glific_template_id",
+   "fieldtype": "Data",
+   "label": "Glific Template Shortcode",
+   "description": "Shortcode / element name in Glific (used to look up template for sending)",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "glific_db_id",
+   "fieldtype": "Data",
+   "label": "Glific Internal ID",
+   "read_only": 1,
+   "description": "Internal Glific DB ID returned after push"
+  },
+  {
+   "fieldname": "glific_push_status",
+   "fieldtype": "Select",
+   "label": "Glific Push Status",
+   "options": "\nNot Pushed\nPushed\nApproved\nRejected",
+   "default": "Not Pushed",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "glific_push_response",
+   "fieldtype": "Small Text",
+   "label": "Glific Push Response",
+   "read_only": 1,
+   "description": "Raw response from Glific when template was pushed"
+  },
+  {
+   "fieldname": "section_meta",
+   "fieldtype": "Section Break",
+   "label": "Auto-detected"
+  },
+  {
+   "fieldname": "detected_params",
+   "fieldtype": "Data",
+   "label": "Detected Params",
+   "read_only": 1,
+   "description": "Auto-detected variable placeholders (e.g. {{1}},{{2}})"
   }
  ],
 

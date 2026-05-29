@@ -1,0 +1,97 @@
+{
+  "doctype": "DocType",
+  "name": "LMS Batch",
+  "module": "TAP Buddy",
+  "autoname": "field:lms_id",
+  "title_field": "batch_name",
+  "search_fields": "lms_id,batch_name",
+  "custom": 0,
+  "sort_field": "last_synced_at",
+  "sort_order": "DESC",
+  "track_changes": 0,
+  "fields": [
+    {
+      "fieldname": "lms_id",
+      "label": "LMS Batch ID",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "reqd": 1,
+      "unique": 1,
+      "description": "Batch ID from LMS (e.g. 1-BT0205)"
+    },
+    {
+      "fieldname": "batch_name",
+      "label": "Batch Name",
+      "fieldtype": "Data",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "title",
+      "label": "Title",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "program_type",
+      "label": "Program Type",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "col_break_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "school",
+      "label": "School",
+      "fieldtype": "Link",
+      "options": "School",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "is_active",
+      "label": "Active",
+      "fieldtype": "Check",
+      "default": "1",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "current_week",
+      "label": "Current Calendar Week",
+      "fieldtype": "Int"
+    },
+    {
+      "fieldname": "total_weeks",
+      "label": "Total Weeks",
+      "fieldtype": "Int"
+    },
+    {
+      "fieldname": "section_dates",
+      "fieldtype": "Section Break",
+      "label": "Dates"
+    },
+    {
+      "fieldname": "start_date",
+      "label": "Start Date",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "end_date",
+      "label": "End Date",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "section_sync",
+      "fieldtype": "Section Break",
+      "label": "Sync Info"
+    },
+    {
+      "fieldname": "last_synced_at",
+      "label": "Last Synced At",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+    {"role": "TAP Manager", "read": 1}
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "doctype": "DocType",
+  "name": "LMS Reminder Log",
+  "module": "TAP Buddy",
+  "autoname": "LMS-REM-.YYYY.-.#####",
+  "title_field": "reminder_type",
+  "search_fields": "student_id,reminder_type,status",
+  "custom": 0,
+  "sort_field": "sent_at",
+  "sort_order": "DESC",
+  "track_changes": 0,
+  "description": "Dedup log for LMS-triggered WhatsApp automation. Prevents duplicate reminder sends.",
+  "fields": [
+    {
+      "fieldname": "student_id",
+      "label": "LMS Student ID",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "reqd": 1,
+      "description": "LMS Student.lms_id (e.g. ST00000206)"
+    },
+    {
+      "fieldname": "phone",
+      "label": "Phone",
+      "fieldtype": "Data",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "reminder_type",
+      "label": "Reminder Type",
+      "fieldtype": "Select",
+      "options": "ASSIGNMENT_DUE_SOON\nASSIGNMENT_OVERDUE\nASSIGNMENT_CREATED\nQUIZ_REMINDER\nCUSTOM",
+      "in_list_view": 1,
+      "reqd": 1
+    },
+    {
+      "fieldname": "dedup_key",
+      "label": "Dedup Key",
+      "fieldtype": "Data",
+      "unique": 1,
+      "description": "Composite key: student_id + reminder_type + period. Used to prevent duplicate sends."
+    },
+    {
+      "fieldname": "col_break_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Sent\nFailed\nSkipped",
+      "default": "Sent",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "glific_message_id",
+      "label": "Glific Message ID",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "sent_at",
+      "label": "Sent At",
+      "fieldtype": "Datetime",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "section_context",
+      "fieldtype": "Section Break",
+      "label": "Context"
+    },
+    {
+      "fieldname": "context_json",
+      "label": "Context (JSON)",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "Assignment ID, batch ID, week, etc."
+    },
+    {
+      "fieldname": "error",
+      "label": "Error",
+      "fieldtype": "Small Text"
+    }
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+    {"role": "TAP Manager", "read": 1}
+  ]
+}
