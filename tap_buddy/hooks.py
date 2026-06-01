@@ -150,6 +150,9 @@ app_include_js = "/assets/tap_buddy/js/tap_buddy.js"
 
 scheduler_events = {
 	"cron": {
+		"*/1 * * * *": [
+			"tap_buddy.tasks.scheduler.trigger_scheduled_campaigns",
+		],
 		"*/10 * * * *": [
 			"tap_buddy.tasks.scheduler.process_pending_lms_events",
 		],
@@ -168,6 +171,7 @@ scheduler_events = {
 		"tap_buddy.tasks.scheduler.sync_lms_schools",
 		"tap_buddy.tasks.scheduler.sync_lms_batches",
 		"tap_buddy.tasks.scheduler.sync_lms_students",
+		"tap_buddy.tap_buddy.doctype.tap_buddy_settings.tap_buddy_settings.scheduled_health_check",
 	],
 }
 
@@ -251,10 +255,3 @@ scheduler_events = {
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-
-scheduler_events = {
-    "hourly": [
-        "tap_buddy.tap_buddy.doctype.tap_buddy_settings.tap_buddy_settings.scheduled_health_check"
-    ]
-}
-

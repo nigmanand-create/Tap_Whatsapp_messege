@@ -48,7 +48,7 @@
    "fieldtype": "Password",
    "in_list_view": 1,
    "label": "Glific Token",
-   "reqd": 1
+   "reqd": 0
   },
   {
    "fieldname": "glific_access_token",

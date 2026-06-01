@@ -1,56 +1,66 @@
 {
- "doctype": "DocType",
- "name": "WhatsApp Template",
- "module": "TAP Buddy",
+ "actions": [],
  "autoname": "field:template_name",
- "title_field": "template_name",
- "search_fields": "template_name",
- "custom": 0,
- "sort_field": "modified",
- "sort_order": "DESC",
-
+ "creation": "2026-05-29 02:30:32.580670",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "message",
+  "col_break_1",
+  "glific_shortcode",
+  "language",
+  "category",
+  "section_glific",
+  "glific_template_id",
+  "glific_db_id",
+  "glific_push_status",
+  "col_break_2",
+  "glific_push_response",
+  "section_meta",
+  "detected_params"
+ ],
  "fields": [
   {
+   "bold": 1,
    "fieldname": "template_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Template Name",
    "reqd": 1,
-   "unique": 1,
-   "in_list_view": 1,
-   "bold": 1
+   "unique": 1
   },
   {
+   "description": "Use {{1}}, {{2}}, ... for variable placeholders",
    "fieldname": "message",
    "fieldtype": "Small Text",
    "label": "Message Body",
-   "reqd": 1,
-   "description": "Use {{1}}, {{2}}, ... for variable placeholders"
+   "reqd": 1
   },
   {
    "fieldname": "col_break_1",
    "fieldtype": "Column Break"
   },
   {
+   "description": "Unique lowercase identifier used in Glific (e.g. pta_meeting_alert_v2). Auto-generated from template name if blank.",
    "fieldname": "glific_shortcode",
    "fieldtype": "Data",
-   "label": "Glific Shortcode (Element Name)",
-   "description": "Unique lowercase identifier used in Glific (e.g. pta_meeting_alert_v2). Auto-generated from template name if blank.",
-   "in_list_view": 1
+   "in_list_view": 1,
+   "label": "Glific Shortcode (Element Name)"
   },
   {
+   "default": "English",
    "fieldname": "language",
    "fieldtype": "Select",
    "label": "Language",
    "options": "English\nHindi\nMarathi",
-   "default": "English",
    "reqd": 1
   },
   {
-   "fieldname": "category",
-   "fieldtype": "Select",
-   "label": "Category",
-   "options": "UTILITY\nMARKETING\nAUTHENTICATION",
    "default": "UTILITY",
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "label": "Category",
    "reqd": 1
   },
   {
@@ -59,38 +69,38 @@
    "label": "Glific Sync"
   },
   {
+   "description": "Shortcode / element name in Glific (used to look up template for sending)",
    "fieldname": "glific_template_id",
    "fieldtype": "Data",
-   "label": "Glific Template Shortcode",
-   "description": "Shortcode / element name in Glific (used to look up template for sending)",
-   "in_list_view": 1
+   "in_list_view": 1,
+   "label": "Glific Template Shortcode"
   },
   {
+   "description": "Internal Glific DB ID returned after push",
    "fieldname": "glific_db_id",
    "fieldtype": "Data",
    "label": "Glific Internal ID",
-   "read_only": 1,
-   "description": "Internal Glific DB ID returned after push"
+   "read_only": 1
   },
   {
+   "default": "Not Pushed",
    "fieldname": "glific_push_status",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Glific Push Status",
    "options": "\nNot Pushed\nPushed\nApproved\nRejected",
-   "default": "Not Pushed",
-   "read_only": 1,
-   "in_list_view": 1
+   "read_only": 1
   },
   {
    "fieldname": "col_break_2",
    "fieldtype": "Column Break"
   },
   {
+   "description": "Raw response from Glific when template was pushed",
    "fieldname": "glific_push_response",
    "fieldtype": "Small Text",
    "label": "Glific Push Response",
-   "read_only": 1,
-   "description": "Raw response from Glific when template was pushed"
+   "read_only": 1
   },
   {
    "fieldname": "section_meta",
@@ -98,21 +108,32 @@
    "label": "Auto-detected"
   },
   {
+   "description": "Auto-detected variable placeholders (e.g. {{1}},{{2}})",
    "fieldname": "detected_params",
    "fieldtype": "Data",
    "label": "Detected Params",
-   "read_only": 1,
-   "description": "Auto-detected variable placeholders (e.g. {{1}},{{2}})"
+   "read_only": 1
   }
  ],
-
+ "links": [],
+ "modified": "2026-06-01 14:32:27.100713",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "WhatsApp Template",
+ "owner": "Administrator",
  "permissions": [
   {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
    "create": 1,
-   "delete": 1
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
   }
- ]
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "template_name",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "template_name"
 }

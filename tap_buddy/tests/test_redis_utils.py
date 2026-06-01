@@ -17,7 +17,7 @@ import json
 import pytest
 
 try:
-    import fakeredis
+    import fakeredis  # type: ignore[import-not-found]
 
     FAKEREDIS_AVAILABLE = True
 except ImportError:
@@ -39,7 +39,7 @@ def fake_redis(monkeypatch):
     Patches get_redis_conn() to return a clean fakeredis instance.
     Also patches frappe.parse_json / frappe.as_json with real JSON calls.
     """
-    import fakeredis
+    import fakeredis  # type: ignore[import-not-found]
     server = fakeredis.FakeRedis(decode_responses=True)
 
     import tap_buddy.services.redis_utils as ru

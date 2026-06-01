@@ -54,11 +54,13 @@ class TAPBuddySettings(Document):
 
 @frappe.whitelist()
 def bootstrap_glific_session(phone, password):
+	from tap_buddy.services.glific_client import normalize_phone, _derive_rest_base_url
+	phone = normalize_phone(phone)
 	settings = frappe.get_single("TAP Buddy Settings")
 	if not settings.glific_url:
 		frappe.throw("Please save the Glific URL before bootstrapping credentials.")
 
-	url = settings.glific_url.rstrip("/") + "/api/v1/session"
+	url = _derive_rest_base_url(settings.glific_url) + "/session"
 	try:
 		res = requests.post(
 			url,

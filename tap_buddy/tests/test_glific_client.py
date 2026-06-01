@@ -12,7 +12,7 @@ import types
 from unittest.mock import MagicMock, patch, call
 
 import pytest
-import requests
+import requests  # type: ignore[import-untyped]
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ class TestTokenRefreshLifecycle:
         fake_response.json.return_value = {"data": {"access_token": "new_access", "refresh_token": "new_refresh", "token_expiry_time": "2030-01-01T00:00:00Z"}}
         fake_response.raise_for_status.return_value = None
         
-        import requests
+        import requests  # type: ignore[import-untyped]
         monkeypatch.setattr(requests, "post", MagicMock(return_value=fake_response))
         
         # Perform refresh
@@ -259,7 +259,7 @@ class TestTokenRefreshLifecycle:
         fake_response = MagicMock()
         fake_response.status_code = 401
         fake_response.text = "Unauthorized"
-        import requests
+        import requests  # type: ignore[import-untyped]
         fake_response.raise_for_status.side_effect = requests.exceptions.HTTPError(response=fake_response)
         
         monkeypatch.setattr(requests, "post", MagicMock(return_value=fake_response))
@@ -277,8 +277,13 @@ class TestTokenRefreshLifecycle:
         
         from tap_buddy.services.glific_client import GlificClient
         client = GlificClient()
+        # _perform_token_refresh with no refresh token should return early without HTTP call
         client.session.post = MagicMock()
-        
+        monkeypatch.setattr(
+            "tap_buddy.services.glific_client.frappe.logger",
+            lambda name: MagicMock(),
+        )
+
         client._perform_token_refresh()
         client.session.post.assert_not_called()
 
@@ -299,7 +304,7 @@ class TestTokenRefreshLifecycle:
         fake_response_401 = MagicMock()
         fake_response_401.status_code = 401
         fake_response_401.text = "Unauthorized"
-        import requests
+        import requests  # type: ignore[import-untyped]
         fake_response_401.raise_for_status.side_effect = requests.exceptions.HTTPError(response=fake_response_401)
         fake_response_401.json.return_value = {}
 
@@ -398,6 +403,7 @@ class TestTokenRefreshLifecycle:
             return None
         def mock_get(fieldname, default=None):
             if fieldname == "glific_token_expiry": return "2030-01-01T00:00:00Z"
+            if fieldname in ("glific_access_token", "glific_refresh_token"): return "******"
             return None
             
         settings.get_password.side_effect = mock_get_password
@@ -431,6 +437,11 @@ class TestCircuitBreaker:
         )
         monkeypatch.setattr(
             "tap_buddy.services.glific_client.acquire_lock", lambda *a, **kw: False
+        )
+        # GlificClient.__init__ calls frappe.cache() to check mock flag
+        monkeypatch.setattr(
+            "tap_buddy.services.glific_client.frappe.cache",
+            lambda: MagicMock(get_value=lambda k: None),
         )
         monkeypatch.setattr(
             "tap_buddy.services.glific_client.frappe.logger",
@@ -542,10 +553,17 @@ class TestLoggingSafety:
             def error(self, msg):
                 log_calls.append(str(msg))
 
+            def info(self, msg):
+                pass  # GlificClient.__init__ calls .info() for mock-mode banner
+
+            def warning(self, msg):
+                pass
+
         fake_frappe = MagicMock()
         fake_frappe.get_single.return_value = settings
         fake_frappe.logger.return_value = FakeLogger()
         fake_frappe.as_json = lambda x: str(x)
+        fake_frappe.cache.return_value = MagicMock(get_value=lambda k: None)
         monkeypatch.setattr("tap_buddy.services.glific_client.frappe", fake_frappe)
 
         # Fake a 400 response whose body echoes the token (upstream bug simulation)
@@ -575,3 +593,24 @@ class TestLoggingSafety:
             assert "SUPER_SECRET_TOKEN_XYZ" not in msg, (
                 f"Auth token leaked into log: {msg}"
             )
+
+    def test_init_loads_refresh_token_securely(self, monkeypatch):
+        settings = _make_settings(access_token="******", refresh_token="******")
+        # Direct property access should return masked token
+        settings.glific_refresh_token = "******"
+        settings.glific_access_token = "******"
+        # get_password should return unmasked token
+        settings.get_password.side_effect = lambda fieldname: {
+            "glific_access_token": "unmasked-access",
+            "glific_refresh_token": "unmasked-refresh",
+            "glific_token": "unmasked-primary"
+        }.get(fieldname)
+        
+        monkeypatch.setattr("frappe.get_single", lambda name: settings)
+        monkeypatch.setattr("frappe.throw", lambda msg: (_ for _ in ()).throw(Exception(msg)))
+        monkeypatch.setattr("tap_buddy.services.glific_client.frappe.cache", lambda: MagicMock(get_value=lambda k: None))
+        
+        from tap_buddy.services.glific_client import GlificClient
+        client = GlificClient()
+        assert client.access_token == "unmasked-access"
+        assert client.refresh_token == "unmasked-refresh"

@@ -8,6 +8,8 @@
   "lms_sec",
   "enabled",
   "lms_base_url",
+  "lms_username",
+  "lms_password",
   "lms_api_key",
   "col_break_1",
   "webhook_secret",
@@ -34,6 +36,16 @@
    "fieldname": "lms_base_url",
    "fieldtype": "Data",
    "label": "LMS Base URL"
+  },
+  {
+   "fieldname": "lms_username",
+   "fieldtype": "Data",
+   "label": "LMS Username"
+  },
+  {
+   "fieldname": "lms_password",
+   "fieldtype": "Password",
+   "label": "LMS Password"
   },
   {
    "fieldname": "lms_api_key",
@@ -96,5 +108,6 @@
  "row_format": "Dynamic",
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "modified": "2026-06-01 12:00:00.000000"
 }

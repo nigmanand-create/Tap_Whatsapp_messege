@@ -73,41 +73,55 @@ def dispatch_reminder(
     error_msg = None
     status = "Sent"
 
-    try:
-        client = GlificClient()
-        resp = client.send_hsm_message(
-            phone=phone,
-            template_id=REMINDER_TEMPLATE,
-            parameters=params,
-        )
-        glific_message_id = _extract_message_id(resp)
-        frappe.logger("lms_automation").info(
-            f"[SENT] {reminder_type} → {phone} ({student_id}) "
-            f"glific_id={glific_message_id}"
-        )
-    except GlificTerminalError as e:
-        # Non-retryable (wrong phone, opted-out, etc.)
-        error_msg = f"Terminal: {e}"
+    template_id = frappe.get_value(
+        "WhatsApp Template",
+        {"glific_shortcode": REMINDER_TEMPLATE},
+        "glific_db_id"
+    )
+
+    if not template_id:
+        error_msg = f"Template shortcode '{REMINDER_TEMPLATE}' not found or mapped."
         status = "Failed"
         frappe.log_error(
-            title=f"LMS Automation — Terminal Error ({reminder_type})",
-            message=f"student={student_id} phone={phone}\n{e}"
+            title=f"LMS Automation — Template Error ({reminder_type})",
+            message=error_msg
         )
-    except GlificAPIError as e:
-        # Transient — log but don't mark as sent (will retry next poll)
-        error_msg = f"Transient: {e}"
-        status = "Failed"
-        frappe.log_error(
-            title=f"LMS Automation — API Error ({reminder_type})",
-            message=f"student={student_id} phone={phone}\n{e}"
-        )
-    except Exception:
-        error_msg = frappe.get_traceback()
-        status = "Failed"
-        frappe.log_error(
-            title=f"LMS Automation — Unexpected Error ({reminder_type})",
-            message=frappe.get_traceback()
-        )
+    else:
+        try:
+            client = GlificClient()
+            resp = client.send_hsm_message(
+                phone=phone,
+                template_id=template_id,
+                parameters=params,
+            )
+            glific_message_id = _extract_message_id(resp)
+            frappe.logger("lms_automation").info(
+                f"[SENT] {reminder_type} → {phone} ({student_id}) "
+                f"glific_id={glific_message_id}"
+            )
+        except GlificTerminalError as e:
+            # Non-retryable (wrong phone, opted-out, etc.)
+            error_msg = f"Terminal: {e}"
+            status = "Failed"
+            frappe.log_error(
+                title=f"LMS Automation — Terminal Error ({reminder_type})",
+                message=f"student={student_id} phone={phone}\n{e}"
+            )
+        except GlificAPIError as e:
+            # Transient — log but don't mark as sent (will retry next poll)
+            error_msg = f"Transient: {e}"
+            status = "Failed"
+            frappe.log_error(
+                title=f"LMS Automation — API Error ({reminder_type})",
+                message=f"student={student_id} phone={phone}\n{e}"
+            )
+        except Exception:
+            error_msg = frappe.get_traceback()
+            status = "Failed"
+            frappe.log_error(
+                title=f"LMS Automation — Unexpected Error ({reminder_type})",
+                message=frappe.get_traceback()
+            )
 
     # ── Log to LMS Reminder Log ───────────────────────────────────────────────
     _log_reminder(

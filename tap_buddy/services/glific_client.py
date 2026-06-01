@@ -1,10 +1,9 @@
 import frappe
 import json
 import logging
-from dateutil import parser
 from datetime import datetime, timezone
-import requests
-from requests.adapters import HTTPAdapter
+import requests  # type: ignore[import-untyped]
+from requests.adapters import HTTPAdapter  # type: ignore[import-untyped]
 from urllib3.util.retry import Retry
 import time
 
@@ -20,6 +19,10 @@ class GlificAPIError(Exception):
 
 
 def get_safe_password(settings, fieldname):
+    val = settings.get(fieldname)
+    if not val:
+        return None
+    
     try:
         passwd = settings.get_password(fieldname)
         if isinstance(passwd, str) and passwd and "***" not in passwd:
@@ -90,7 +93,7 @@ def _coerce_glific_id(value):
         return value
 
 def normalize_phone(phone):
-    phone = str(phone).replace("+", "").strip()
+    phone = str(phone).replace("+", "").replace(" ", "").replace("-", "").strip()
 
     if phone.startswith("91"):
         return phone
@@ -104,7 +107,9 @@ class GlificClient:
 
     def __init__(self):
         settings = frappe.get_single("TAP Buddy Settings")
-        if not settings.glific_url or not get_safe_password(settings, "glific_token"):
+        
+        has_token = get_safe_password(settings, "glific_access_token") or get_safe_password(settings, "glific_token")
+        if not settings.glific_url or not has_token:
             frappe.throw("Glific URL and Token must be configured in TAP Buddy Settings.")
             
         self.base_url = settings.glific_url.rstrip("/")
@@ -114,12 +119,12 @@ class GlificClient:
         self.primary_token = get_safe_password(settings, "glific_token")
         self.token_expiry = getattr(settings, "glific_token_expiry", None)
         self.base_url = settings.glific_url or "https://api.tap.glific.com/api/v1"
-        self.access_token = settings.glific_access_token
-        self.refresh_token = settings.glific_refresh_token
+        self.access_token = get_safe_password(settings, "glific_access_token")
+        self.refresh_token = get_safe_password(settings, "glific_refresh_token")
         
         # [MOCK INJECTION FOR CYPRESS E2E]
         is_explicit_mock = bool(frappe.cache().get_value("mock_glific"))
-        if is_explicit_mock or (self.access_token and self.access_token == "*" * 100) or (settings.glific_token and settings.glific_token == "*" * 100):
+        if is_explicit_mock or (self.token and self.token == "*" * 100) or (self.primary_token and self.primary_token == "*" * 100):
             frappe.logger("tap_buddy_glific").info("[MOCK] Glific API mock enabled for E2E tests.")
             self._is_mock = True
         else:
@@ -893,7 +898,7 @@ class GlificClient:
                 # Non-window terminal error — do not fall back, re-raise
                 raise
 
-            if not hsm_template_name or not hsm_parameters:
+            if not hsm_template_name or hsm_parameters is None:
                 frappe.logger("tap_buddy_glific").warning(
                     f"[SEND] 24hr window closed for {phone} and no HSM fallback configured."
                 )
@@ -1195,6 +1200,7 @@ class GlificClient:
                 "type":       "TEXT",
                 "category":   category,
                 "isHsm":      True,
+                "example":    "test",
             }
         }
 

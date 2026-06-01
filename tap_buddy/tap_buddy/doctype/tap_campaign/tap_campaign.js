@@ -37,17 +37,36 @@ frappe.ui.form.on("TAP Campaign", {
                 const current = (frm.doc.message_template || "").trim();
                 const previous_template = (frm.doc.__last_template_message || "").trim();
 
-                if (!current || current === previous_template) {
-                    frm.set_value("message_template", cleaned);
-                } else {
-                    frappe.msgprint({
-                        title: __("Template Changed"),
-                        message: __("Message Template was customized, so it was not overwritten."),
-                        indicator: "orange"
-                    });
-                }
-
+                frm.set_value("message_template", cleaned);
                 frm.doc.__last_template_message = cleaned;
+                
+                // Auto-populate Variable Mappings
+                const matches = cleaned.match(/\{\{(\d+)\}\}/g);
+                if (matches) {
+                    let num_vars = 0;
+                    matches.forEach(match => {
+                        const num = parseInt(match.replace(/\D/g, ''));
+                        if (num > num_vars) num_vars = num;
+                    });
+                    
+                    frm.clear_table("variable_mappings");
+                    for (let i = 1; i <= num_vars; i++) {
+                        let row = frm.add_child("variable_mappings");
+                        row.variable_number = i;
+                        // Defaults for convenience
+                        if (i === 1) {
+                            row.mapping_type = "School Field";
+                            row.field_name = "contact_name";
+                        } else if (i === 2) {
+                            row.mapping_type = "Student Field";
+                            row.field_name = "child_name";
+                        }
+                    }
+                    frm.refresh_field("variable_mappings");
+                } else {
+                    frm.clear_table("variable_mappings");
+                    frm.refresh_field("variable_mappings");
+                }
             });
         }
     }

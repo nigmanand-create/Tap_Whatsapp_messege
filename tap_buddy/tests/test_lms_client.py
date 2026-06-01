@@ -25,13 +25,23 @@ def test_get_students_builds_request_params(monkeypatch):
     # Provide fake settings via frappe.get_single
     monkeypatch.setattr("frappe.get_single", lambda name: _make_settings())
 
-    # Capture the args passed to requests.request
+    # Patch get_decrypted_password at source (imported inline inside LMSClient.__init__)
+    monkeypatch.setattr(
+        "frappe.utils.password.get_decrypted_password",
+        lambda doctype, name, fieldname, raise_exception=True: _MOCK_LMS_API_KEY,
+    )
+
+    # Patch frappe.throw to raise a plain exception instead of touching Frappe flags
+    monkeypatch.setattr("frappe.throw", lambda msg: (_ for _ in ()).throw(Exception(msg)))
+
+    # Capture the args passed to session.request (LMSClient uses self.session.request internally)
     captured = {}
 
     class FakeResp:
         def __init__(self, data):
             self._data = data
             self.text = json.dumps(data)
+            self.status_code = 200
 
         def raise_for_status(self):
             return None
@@ -46,9 +56,9 @@ def test_get_students_builds_request_params(monkeypatch):
         captured["params"] = params
         return FakeResp({"data": [{"name": "S1", "phone": "+911234"}]})
 
-    monkeypatch.setattr("tap_buddy.services.lms_client.requests.request", fake_request)
-
     client = lms_client.LMSClient()
+    # Patch the session after construction — session.request is what _request() calls
+    client.session.request = fake_request
     result = client.get_students(fields=["name", "phone"], limit_page_length=5)
 
     assert "data" in result

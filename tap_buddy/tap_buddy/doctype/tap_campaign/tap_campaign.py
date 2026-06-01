@@ -54,7 +54,10 @@ class TAPCampaign(Document):
                 "tap_buddy.tasks.scheduler.dispatch_campaign",
                 campaign_name=self.name,
                 queue="default",
-                timeout=3600
+                timeout=3600,
+                job_id=f"dispatch_campaign_{self.name}",
+                deduplicate=True,
+                enqueue_after_commit=True
             )
 
         # Update Campaign Status (Queued is canonical; Scheduled is transitional)
@@ -89,21 +92,4 @@ class TAPCampaign(Document):
         if not template_text:
             return
 
-        if not self.message_template:
-            self.message_template = template_text
-            return
-
-        previous = self.get_doc_before_save()
-        if not previous or previous.template == self.template:
-            return
-
-        old_template = frappe.get_value("WhatsApp Template", previous.template, "message")
-        if not old_template:
-            old_template = frappe.get_value("WhatsApp Template", previous.template, "message_body")
-
-        if (self.message_template or "").strip() == (old_template or "").strip():
-            self.message_template = template_text
-        else:
-            frappe.msgprint(
-                "Template changed, but Message Template was customized. Keeping your custom content."
-            )
+        self.message_template = template_text

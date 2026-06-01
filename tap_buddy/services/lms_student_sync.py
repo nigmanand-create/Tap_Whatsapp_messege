@@ -38,6 +38,8 @@ def sync_all_students():
             "errors": 0,
         }
     """
+    _school_cache.clear()
+
     settings = frappe.get_single("LMS Integration Settings")
     if not getattr(settings, "polling_enabled", False):
         return {"status": "disabled"}

@@ -119,36 +119,13 @@ Pre-commit is configured to use the following tools for checking and formatting 
 
 mit
 
-### Set Glific credentials from environment (recommended)
+### Glific Authentication
 
-You can set sensitive Glific credentials via environment variables and apply them to the site without committing secrets:
+Authentication is handled securely via the **TAP Buddy Settings** UI.
 
-```bash
-# export the values in your shell (do NOT commit these)
-export GLIFIC_URL="https://api.glific.example/v1"
-export GLIFIC_TOKEN="long-primary-token"
-export GLIFIC_ACCESS_TOKEN="short-lived-access-token"
-export GLIFIC_REFRESH_TOKEN="refresh-token"
-export GLIFIC_TOKEN_EXPIRY="2026-06-01T00:00:00"
-export GLIFIC_PHONE_NUMBER="+919999999999"
-export WEBHOOK_SECRET="super-secret"
+1. Navigate to **TAP Buddy Settings** in Desk.
+2. Enter your Glific Phone Number and Password.
+3. Click **Bootstrap Session**.
+4. The system will automatically fetch, encrypt, and store your access and refresh tokens, and manage token rotation automatically via background schedulers.
 
-# apply to site (run from bench directory)
-bench --site tapbuddy.local execute "import tap_buddy.scripts.set_glific_settings as s; s.set_from_env()"
-```
-
-Alternatively you can run a one-liner with `frappe.get_single` in bench console to set specific fields.
-
-### Run a Glific send test
-
-1) Copy `.env.sample` to `apps/tap_buddy/.env.local` and fill values. Keep this file private.
-
-2) By default `DRY_RUN=1` in `.env.local`. To perform a live send, set `DRY_RUN=0` and ensure `GLIFIC_TEST_PHONE` is a number you control.
-
-3) From the bench directory run:
-
-```bash
-./apps/tap_buddy/scripts/run_glific_test.sh
-```
-
-This will execute `send_from_env()` inside the site and print the response. The script will abort if `.env.local` is missing.
+*Note: Do not commit tokens to your repository or `.env` files.*

@@ -181,9 +181,9 @@ def retry_failed_messages():
 
 
 def sweep_stale_campaigns():
-    """
-    Scheduled job to clean up or mark campaigns as stale.
-    """
+
+   # Scheduled job to clean up or mark campaigns as stale.
+  
     cutoff = now_datetime() - timedelta(days=1)
     campaigns = frappe.get_all(
         "TAP Campaign",
@@ -201,6 +201,39 @@ def sweep_stale_campaigns():
         )
         if pending == 0:
             frappe.db.set_value("TAP Campaign", campaign.name, "status", STATUS_FAILED)
+
+
+def trigger_scheduled_campaigns():
+
+    #Scheduled job (runs every minute) to trigger dispatch for campaigns 
+   # whose send_date has arrived.
+   
+    settings = cast(Any, frappe.get_single("TAP Buddy Settings"))
+    if not _is_within_dispatch_window(settings):
+        return
+
+    # Find campaigns that are Queued or Scheduled and the send_date has passed
+    campaigns = frappe.get_all(
+        "TAP Campaign",
+        filters={
+            "status": ["in", [STATUS_SCHEDULED, STATUS_QUEUED]],
+            "send_date": ["<=", now_datetime()]
+        },
+        fields=["name"]
+    )
+
+    for campaign in campaigns:
+        frappe.logger("scheduler").info(f"Triggering scheduled campaign: {campaign.name}")
+        frappe.enqueue(
+            "tap_buddy.tasks.scheduler.dispatch_campaign",
+            campaign_name=campaign.name,
+            queue="default",
+            timeout=3600,
+            job_id=f"dispatch_campaign_{campaign.name}",
+            deduplicate=True,
+            enqueue_after_commit=True
+        )
+
 
 
 def sync_campaign_counts():
@@ -379,14 +412,23 @@ def _get_hsm_template_name(campaign):
     return shortcode or None
 
 
+import re
+
 def _build_hsm_parameters(campaign, school):
     """
-    Build the ordered parameter list for the ``pta_meeting_alert_v2`` template:
-        [parent_name, student_name, meeting_date, meeting_time]
-
-    Values are pulled from the School document and campaign context.
-    Falls back to safe placeholders so the message always renders.
+    Build the ordered parameter list dynamically based on the template text.
     """
+    template_text = _get_template_text(campaign)
+    
+    # Find all {{n}} placeholders
+    matches = re.findall(r'\{\{(\d+)\}\}', template_text)
+    if not matches:
+        return []
+    
+    num_vars = max(map(int, matches))
+    if num_vars == 0:
+        return []
+
     context = get_recipient_context(school.name)
 
     parent_name  = (
@@ -415,12 +457,52 @@ def _build_hsm_parameters(campaign, school):
     meeting_date = meeting_date or "TBD"
     meeting_time = meeting_time or "TBD"
 
+    # Default mappings if we don't have dynamic mapping table:
+    defaults = {
+        1: str(parent_name),
+        2: str(student_name),
+        3: str(meeting_date),
+        4: str(meeting_time)
+    }
+
+    params = []
+    if campaign.get("variable_mappings"):
+        mapping_dict = {row.variable_number: row for row in campaign.variable_mappings}
+        for i in range(1, num_vars + 1):
+            row = mapping_dict.get(i)
+            if row:
+                if row.mapping_type == "Static Text":
+                    val = row.static_value
+                else:
+                    # Resolve dynamic field
+                    if row.field_name in ("parent_name", "contact_name"):
+                        val = parent_name
+                    elif row.field_name in ("student_name", "child_name"):
+                        val = student_name
+                    elif row.field_name == "meeting_date":
+                        val = meeting_date
+                    elif row.field_name == "meeting_time":
+                        val = meeting_time
+                    elif row.field_name == "school_name":
+                        val = school.school_name
+                    elif row.field_name == "udise_code":
+                        val = school.udise_code
+                    elif row.field_name == "phone_number":
+                        val = context.get("phone_number") or getattr(school, "whatsapp_number", None)
+                    else:
+                        val = context.get(row.field_name)
+                params.append(str(val or "N/A"))
+            else:
+                params.append(defaults.get(i, "N/A"))
+    else:
+        for i in range(1, num_vars + 1):
+            params.append(defaults.get(i, "N/A"))
+        
     frappe.logger("tap_buddy_dispatch").info(
-        f"[HSM-PARAMS] school={school.name} "
-        f"parent={parent_name!r} student={student_name!r} "
-        f"date={meeting_date!r} time={meeting_time!r}"
+        f"[HSM-PARAMS] Generated params={params} for template with {num_vars} variables"
     )
-    return [str(parent_name), str(student_name), str(meeting_date), str(meeting_time)]
+    return params
+
 
 
 def _create_message_log(campaign, school, phone, message, response, provider_id, status, sent_at):

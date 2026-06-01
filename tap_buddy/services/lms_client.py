@@ -73,6 +73,9 @@ class LMSClient:
             resp.raise_for_status()
             return resp.json() if resp.text.strip() else {}
         except requests.exceptions.HTTPError as e:
+            if resp.status_code == 401:
+                frappe.logger("tap_buddy_lms").info("[AUTH] HTTP 401 Unauthorized detected. Attempting auto-rotation.")
+                return self._handle_401_and_retry(method, path, **kwargs)
             frappe.log_error(
                 title=f"LMS HTTP {resp.status_code} — {method} {path}",
                 message=f"{e}\nResponse: {resp.text[:500]}"
@@ -81,6 +84,91 @@ class LMSClient:
         except requests.exceptions.RequestException as e:
             frappe.log_error(title=f"LMS Request Error — {method} {path}", message=str(e))
             raise LMSAPIError(str(e))
+
+    def _handle_401_and_retry(self, method: str, path: str, **kwargs):
+        from tap_buddy.services.redis_utils import acquire_lock, release_lock
+        
+        locked = acquire_lock("lms_token_refresh", timeout=15)
+        if not locked:
+            frappe.logger("tap_buddy_lms").warning("[AUTH] Failed to acquire lock for LMS rotation.")
+            raise LMSAPIError("LMS HTTP 401: Token rotation already in progress but lock timed out.")
+            
+        try:
+            # Check if token was rotated by another worker
+            settings = frappe.get_single("LMS Integration Settings")
+            try:
+                from frappe.utils.password import get_decrypted_password
+                current_api_key = get_decrypted_password("LMS Integration Settings", "LMS Integration Settings", "lms_api_key", raise_exception=False)
+            except Exception:
+                current_api_key = None
+                
+            # If the header token is different from DB token, someone already rotated it!
+            db_token = f"token {current_api_key}" if current_api_key else None
+            if current_api_key and self.headers.get("Authorization") != db_token:
+                frappe.logger("tap_buddy_lms").info("[AUTH] Token already rotated by another worker. Resuming.")
+                self.headers["Authorization"] = db_token
+            else:
+                self._rotate_keys(settings)
+        finally:
+            release_lock("lms_token_refresh")
+                
+        # Retry original request
+        url = f"{self.base_url}{path}"
+        resp = self.session.request(method, url, headers=self.headers, **kwargs)
+        resp.raise_for_status()
+        return resp.json() if resp.text.strip() else {}
+
+    def _rotate_keys(self, settings):
+        try:
+            from frappe.utils.password import get_decrypted_password
+            username = settings.lms_username
+            password = get_decrypted_password("LMS Integration Settings", "LMS Integration Settings", "lms_password", raise_exception=False)
+        except Exception:
+            username = None
+            password = None
+            
+        if not username or not password:
+            frappe.throw("LMS HTTP 401: Cannot rotate keys because lms_username or lms_password is not set in LMS Integration Settings.")
+            
+        login_session = requests.Session()
+        login_url = f"{self.base_url}/api/method/login"
+        login_res = login_session.post(login_url, data={"usr": username, "pwd": password}, verify=False)
+        
+        if login_res.status_code != 200:
+            frappe.logger("tap_buddy_lms").error(f"[AUTH] Auto-rotation login failed: {login_res.text[:200]}")
+            frappe.throw("LMS HTTP 401: Auto-rotation failed. Invalid lms_username or lms_password.")
+            
+        # Generate new keys
+        keys_url = f"{self.base_url}/api/method/frappe.core.doctype.user.user.generate_keys"
+        keys_res = login_session.post(keys_url, data={"user": username}, verify=False)
+        if keys_res.status_code != 200:
+            frappe.throw(f"LMS HTTP 401: Auto-rotation failed to generate keys: {keys_res.text[:200]}")
+            
+        # API Secret returns nested under {"message": {"api_secret": "..."}}
+        api_secret = keys_res.json().get("message", {}).get("api_secret")
+        if not api_secret:
+            # Sometime Frappe returns it differently depending on version
+            api_secret = keys_res.json().get("api_secret")
+            
+        # Get api_key
+        user_url = f"{self.base_url}/api/resource/User/{username}"
+        user_res = login_session.get(user_url, verify=False)
+        if user_res.status_code != 200:
+            frappe.throw(f"LMS HTTP 401: Auto-rotation failed to get user details: {user_res.text[:200]}")
+            
+        api_key = user_res.json().get("data", {}).get("api_key")
+        
+        if not api_key or not api_secret:
+            frappe.throw("LMS HTTP 401: Auto-rotation failed to parse new keys.")
+            
+        new_token = f"{api_key}:{api_secret}"
+        
+        from frappe.utils.password import set_encrypted_password
+        set_encrypted_password("LMS Integration Settings", "LMS Integration Settings", new_token, "lms_api_key")
+        frappe.db.commit()
+        
+        self.headers["Authorization"] = f"token {new_token}"
+        frappe.logger("tap_buddy_lms").info("[AUTH] Auto-rotation successful. New LMS API keys generated and saved.")
 
     # ─── Generic resource fetch ────────────────────────────────────────────
 

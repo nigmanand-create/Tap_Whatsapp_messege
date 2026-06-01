@@ -8,6 +8,6 @@
     "cy:run:spec": "cypress run --config-file cypress.config.js --spec 'tap_buddy/tests/ui/tap_campaign_spec.js'"
   },
   "devDependencies": {
-    "cypress": "^13.17.0"
+    "cypress": "^15.16.0"
   }
 }

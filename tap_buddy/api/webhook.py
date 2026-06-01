@@ -13,8 +13,30 @@ def handle():
         return {"status": "disabled"}
 
     raw_body = frappe.request.get_data(as_text=True) or ""
-    # signature = _get_signature(settings)
-    # _validate_signature(raw_body, signature, settings.webhook_secret)
+    
+    # --- Observability Patch ---
+    try:
+        header_name = settings.webhook_signature_header or "X-Glific-Signature"
+        provided_sig = frappe.get_request_header(header_name)
+        secret = settings.get_password("webhook_secret") if hasattr(settings, "get_password") else settings.webhook_secret
+        expected_hmac = ""
+        if secret:
+            expected_hmac = hmac.new(secret.encode("utf-8"), raw_body.encode("utf-8"), hashlib.sha256).hexdigest()
+        
+        match = False
+        clean_provided = provided_sig
+        if provided_sig and provided_sig.startswith("sha256="):
+            clean_provided = provided_sig.split("=", 1)[1]
+        if clean_provided and expected_hmac:
+            match = hmac.compare_digest(expected_hmac, clean_provided)
+            
+        frappe.logger("tap_buddy_webhooks").info(
+            f"[OBSERVABILITY] Glific - Header: {header_name}, Provided: {provided_sig}, "
+            f"Expected: sha256={expected_hmac}, Match: {match}"
+        )
+    except Exception as e:
+        frappe.logger("tap_buddy_webhooks").error(f"[OBSERVABILITY ERROR] {e}")
+    # ---------------------------
 
     payload = frappe.parse_json(raw_body) if raw_body else {}
     # pass empty signature for testing

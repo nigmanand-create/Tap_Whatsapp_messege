@@ -48,7 +48,7 @@ def _resolve_target_schools(campaign) -> list[str]:
 
     if targeting_type == "School Group" and campaign.school_group:
         group = frappe.get_doc("School Group", campaign.school_group)
-        schools = group.get_active_schools() or [m.school for m in group.members]  # type: ignore[attr-defined]
+        schools = group.get_active_schools()
         return [s for s in schools if s]
 
     if campaign.school_name:
