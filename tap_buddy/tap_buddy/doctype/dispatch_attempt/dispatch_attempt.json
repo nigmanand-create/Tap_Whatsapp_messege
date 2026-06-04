@@ -1,115 +1,142 @@
 {
- "doctype": "DocType",
- "name": "Dispatch Attempt",
- "module": "TAP Buddy",
+ "actions": [],
  "autoname": "DSPA-.YYYY.-.#####",
- "title_field": "campaign",
- "search_fields": "campaign,school,phone_number,status",
- "custom": 0,
- "sort_field": "creation",
- "sort_order": "DESC",
-
+ "creation": "2026-05-27 00:29:19.440026",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign",
+  "recipient",
+  "school",
+  "phone_number",
+  "message",
+  "status",
+  "attempt_time",
+  "retry_count",
+  "idempotency_key",
+  "provider_message_id",
+  "api_response",
+  "error_message",
+  "terminal_failure",
+  "whatsapp_group"
+ ],
  "fields": [
   {
    "fieldname": "campaign",
+   "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Campaign",
-   "fieldtype": "Link",
    "options": "TAP Campaign",
-   "reqd": 1,
-   "in_list_view": 1
-  },
-  {
-   "fieldname": "recipient",
-   "label": "Recipient",
-   "fieldtype": "Link",
-   "options": "Campaign Recipient",
-   "reqd": 1,
-   "in_list_view": 1
-  },
-  {
-   "fieldname": "school",
-   "label": "School",
-   "fieldtype": "Link",
-   "options": "School",
-   "reqd": 1,
-   "in_list_view": 1
-  },
-  {
-   "fieldname": "phone_number",
-   "label": "Phone Number",
-   "fieldtype": "Phone",
-   "reqd": 1,
-   "in_list_view": 1
-  },
-  {
-   "fieldname": "message",
-   "label": "Message",
-   "fieldtype": "Small Text",
    "reqd": 1
   },
   {
-   "fieldname": "status",
-   "label": "Status",
-   "fieldtype": "Select",
-   "options": "Queued\nSent\nFailed",
+   "fieldname": "recipient",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Recipient",
+   "options": "Campaign Recipient",
+   "reqd": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Phone",
+   "in_list_view": 1,
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Small Text",
+   "label": "Message",
+   "reqd": 1
+  },
+  {
    "default": "Queued",
-   "reqd": 1,
-   "in_list_view": 1
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Queued\nSent\nFailed",
+   "reqd": 1
   },
   {
    "fieldname": "attempt_time",
-   "label": "Attempt Time",
    "fieldtype": "Datetime",
-   "read_only": 1,
-   "in_list_view": 1
+   "in_list_view": 1,
+   "label": "Attempt Time",
+   "read_only": 1
   },
   {
    "fieldname": "retry_count",
-   "label": "Retry Count",
    "fieldtype": "Int",
+   "label": "Retry Count",
    "read_only": 1
   },
   {
    "fieldname": "idempotency_key",
-   "label": "Idempotency Key",
    "fieldtype": "Data",
+   "label": "Idempotency Key",
    "read_only": 1
   },
   {
    "fieldname": "provider_message_id",
-   "label": "Provider Message ID",
    "fieldtype": "Data",
+   "label": "Provider Message ID",
    "read_only": 1
   },
   {
    "fieldname": "api_response",
-   "label": "API Response",
    "fieldtype": "Code",
+   "label": "API Response",
    "options": "JSON",
    "read_only": 1
   },
   {
    "fieldname": "error_message",
-   "label": "Error Message",
    "fieldtype": "Small Text",
+   "label": "Error Message",
    "read_only": 1
   },
   {
-   "fieldname": "terminal_failure",
-   "label": "Terminal Failure",
-   "fieldtype": "Check",
    "default": "0",
+   "fieldname": "terminal_failure",
+   "fieldtype": "Check",
+   "label": "Terminal Failure",
    "read_only": 1
+  },
+  {
+   "fieldname": "whatsapp_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Group",
+   "options": "WhatsApp Group"
   }
  ],
-
+ "links": [],
+ "modified": "2026-06-05 00:19:33.769284",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "Dispatch Attempt",
+ "owner": "Administrator",
  "permissions": [
   {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
    "create": 1,
-   "delete": 1
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
   }
- ]
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "campaign,school,phone_number,status",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "campaign"
 }

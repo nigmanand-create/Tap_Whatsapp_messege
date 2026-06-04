@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2026-06-04 19:20:33.500928",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-06-04 19:20:33.500928",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "whatsapp-group-brows",
+ "owner": "Administrator",
+ "page_name": "whatsapp-group-brows",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "WhatsApp Group Collections"
+}

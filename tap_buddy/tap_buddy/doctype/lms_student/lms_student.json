@@ -24,6 +24,7 @@
       "label": "Student Name",
       "fieldtype": "Data",
       "in_list_view": 1,
+      "search_index": 1,
       "reqd": 1
     },
     {
@@ -31,6 +32,7 @@
       "label": "WhatsApp Phone",
       "fieldtype": "Data",
       "in_list_view": 1,
+      "search_index": 1,
       "reqd": 1,
       "description": "Normalized phone number (with country code, e.g. 919876543210)"
     },
@@ -49,6 +51,7 @@
       "label": "School",
       "fieldtype": "Link",
       "options": "School",
+      "search_index": 1,
       "in_list_view": 1
     },
     {
@@ -92,6 +95,7 @@
       "label": "Last Synced At",
       "fieldtype": "Datetime",
       "in_list_view": 1,
+      "search_index": 1,
       "read_only": 1
     }
   ],

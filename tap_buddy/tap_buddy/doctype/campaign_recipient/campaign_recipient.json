@@ -1,108 +1,126 @@
 {
- "doctype": "DocType",
- "name": "Campaign Recipient",
- "module": "TAP Buddy",
+ "actions": [],
  "autoname": "REC-.YYYY.-.#####",
- "title_field": "school",
- "search_fields": "campaign,school,status",
- "custom": 0,
- "sort_field": "creation",
- "sort_order": "DESC",
-
+ "creation": "2026-05-27 00:29:19.251706",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign",
+  "school",
+  "status",
+  "scheduled_time",
+  "sent_time",
+  "delivered_time",
+  "read_time",
+  "failure_reason",
+  "retry_count",
+  "terminal_failure",
+  "idempotency_key",
+  "whatsapp_group"
+ ],
  "fields": [
   {
    "fieldname": "campaign",
-   "label": "Campaign",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Campaign",
    "options": "TAP Campaign",
    "reqd": 1,
-   "in_list_view": 1,
    "search_index": 1
   },
-
   {
    "fieldname": "school",
-   "label": "School",
    "fieldtype": "Link",
-   "options": "School",
-   "reqd": 1,
-   "in_list_view": 1
-  },
-
-  {
-   "fieldname": "status",
-   "label": "Status",
-   "fieldtype": "Select",
-    "options": "Pending\nQueued\nProcessing\nSent\nDelivered\nRead\nFailed",
-   "default": "Pending",
-   "reqd": 1,
    "in_list_view": 1,
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pending\nQueued\nProcessing\nSent\nDelivered\nRead\nFailed",
+   "reqd": 1,
    "search_index": 1
   },
-
   {
    "fieldname": "scheduled_time",
-   "label": "Scheduled Time",
-   "fieldtype": "Datetime"
+   "fieldtype": "Datetime",
+   "label": "Scheduled Time"
   },
-
   {
    "fieldname": "sent_time",
-   "label": "Sent Time",
    "fieldtype": "Datetime",
-   "in_list_view": 1
+   "in_list_view": 1,
+   "label": "Sent Time"
   },
-
   {
    "fieldname": "delivered_time",
-   "label": "Delivered Time",
-   "fieldtype": "Datetime"
+   "fieldtype": "Datetime",
+   "label": "Delivered Time"
   },
-
   {
    "fieldname": "read_time",
-   "label": "Read Time",
-   "fieldtype": "Datetime"
+   "fieldtype": "Datetime",
+   "label": "Read Time"
   },
-
   {
    "fieldname": "failure_reason",
-   "label": "Failure Reason",
    "fieldtype": "Small Text",
-   "read_only": 1
-  },
-
-  {
-   "fieldname": "retry_count",
-   "label": "Retry Count",
-   "fieldtype": "Int",
-   "default": 0,
+   "label": "Failure Reason",
    "read_only": 1
   },
   {
-   "fieldname": "terminal_failure",
-   "label": "Terminal Failure",
-   "fieldtype": "Check",
    "default": "0",
-   "read_only": 1,
-   "description": "If checked, this recipient will not be retried."
+   "fieldname": "retry_count",
+   "fieldtype": "Int",
+   "label": "Retry Count",
+   "read_only": 1
   },
   {
+   "default": "0",
+   "description": "If checked, this recipient will not be retried.",
+   "fieldname": "terminal_failure",
+   "fieldtype": "Check",
+   "label": "Terminal Failure",
+   "read_only": 1
+  },
+  {
+   "description": "Unique key to prevent duplicate sends.",
    "fieldname": "idempotency_key",
-   "label": "Idempotency Key",
    "fieldtype": "Data",
-   "read_only": 1,
-   "description": "Unique key to prevent duplicate sends."
+   "label": "Idempotency Key",
+   "read_only": 1
+  },
+  {
+   "fieldname": "whatsapp_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Group",
+   "options": "WhatsApp Group"
   }
  ],
-
+ "links": [],
+ "modified": "2026-06-04 19:22:51.915599",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "Campaign Recipient",
+ "owner": "Administrator",
  "permissions": [
   {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
    "create": 1,
-   "delete": 1
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
   }
- ]
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "campaign,school,status",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "school"
 }

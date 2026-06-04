@@ -173,6 +173,9 @@ scheduler_events = {
 		"tap_buddy.tasks.scheduler.sync_lms_students",
 		"tap_buddy.tap_buddy.doctype.tap_buddy_settings.tap_buddy_settings.scheduled_health_check",
 	],
+	"daily": [
+		"tap_buddy.services.group_collection_sync.sync_collections_and_groups",
+	],
 }
 
 # Testing

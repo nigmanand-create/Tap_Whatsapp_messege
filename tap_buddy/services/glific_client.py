@@ -623,6 +623,74 @@ class GlificClient:
                 return result.get("message") or {}
 
     # ------------------------------------------------------------------
+    # Group & Collection Management
+    # ------------------------------------------------------------------
+
+    def get_group_collections(self):
+        """
+        Fetch all Group Collections from Glific.
+        """
+        query = """
+        query {
+            groups(opts: {limit: 10000}) {
+                id
+                label
+                waGroupsCount
+            }
+        }
+        """
+        result = self._graphql_request(query)
+        return result.get("groups") or []
+
+    def get_whatsapp_groups(self):
+        """
+        Fetch all WhatsApp Groups and their Collection mappings from Glific.
+        """
+        query = """
+        query {
+            waGroups(opts: {limit: 10000}) {
+                id
+                label
+                lastCommunicationAt
+                groups {
+                    id
+                    label
+                }
+            }
+        }
+        """
+        result = self._graphql_request(query)
+        return result.get("waGroups") or []
+
+    def send_message_to_group(self, group_id: str, message: str):
+        """
+        Send a text message directly to a WhatsApp Group.
+        """
+        query = """
+        mutation sendMessageInWaGroup($input: WaMessageInput!) {
+            sendMessageInWaGroup(input: $input) {
+                errors {
+                    key
+                    message
+                }
+            }
+        }
+        """
+        variables = {
+            "input": {
+                "waGroupId": str(_coerce_glific_id(group_id)),
+                "message": message,
+                "type": "TEXT"
+            }
+        }
+        print(f"DEBUG: send_message_to_group -> {group_id}")
+        result = self._graphql_request(query, variables).get("sendMessageInWaGroup") or {}
+        errors = result.get("errors")
+        if errors:
+            raise GlificTerminalError(f"Terminal Glific Error: 200 - {_serialize_graphql_errors(errors)}")
+        return result.get("message") or {}
+
+    # ------------------------------------------------------------------
     # Template discovery
     # ------------------------------------------------------------------
 

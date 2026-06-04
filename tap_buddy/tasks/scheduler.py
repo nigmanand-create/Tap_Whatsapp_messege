@@ -114,7 +114,7 @@ def dispatch_campaign(campaign_name):
     recipients = frappe.get_all(
         "Campaign Recipient",
         filters={"name": ["in", claimed_names]},
-        fields=["name", "school", "retry_count", "campaign"]
+        fields=["name", "school", "whatsapp_group", "retry_count", "campaign"]
     )
 
     client = GlificClient()
@@ -164,7 +164,7 @@ def retry_failed_messages():
     recipients = frappe.get_all(
         "Campaign Recipient",
         filters={"name": ["in", claimed_names]},
-        fields=["name", "school", "retry_count", "campaign"]
+        fields=["name", "school", "whatsapp_group", "retry_count", "campaign"]
     )
     
     client = GlificClient()
@@ -310,8 +310,64 @@ def process_glific_sync():
     """
     sync_glific()
 
-
 def _dispatch_recipient(client, campaign, recipient):
+    if getattr(recipient, "whatsapp_group", None):
+        _dispatch_group_recipient(client, campaign, recipient)
+    else:
+        _dispatch_school_recipient(client, campaign, recipient)
+
+def _dispatch_group_recipient(client, campaign, recipient):
+    group = frappe.get_doc("WhatsApp Group", recipient.whatsapp_group)
+    group_id = group.glific_group_id
+
+    # Add minimal context for group message rendering
+    frappe.local.form_dict = {"group_name": group.group_name}
+    message = _render_message(campaign, None)
+    
+    if not message:
+        _mark_failed(recipient, "Empty message after rendering", increment_retry=False, terminal=True)
+        return
+
+    idempotency_key = f"tap_{campaign.name}_{recipient.name}"
+    frappe.db.set_value("Campaign Recipient", recipient.name, "idempotency_key", idempotency_key)
+
+    attempt_name = _create_dispatch_attempt(campaign, recipient, None, message, idempotency_key, whatsapp_group=recipient.whatsapp_group)
+
+    sent_at = now_datetime()
+    try:
+        msg = client.send_message_to_group(group_id, message)
+        provider_id = _extract_provider_message_id(msg)
+
+        frappe.logger("tap_buddy_dispatch").info(
+            f"[DISPATCH] Recipient {recipient.name} sent to Group "
+            f"group_id={group_id} message_id={provider_id}"
+        )
+
+        _update_dispatch_attempt_success(attempt_name, msg, provider_id)
+        _create_message_log(campaign, None, None, message, msg, provider_id, REC_STATUS_SENT, sent_at, whatsapp_group=recipient.whatsapp_group)
+
+        frappe.db.set_value(
+            "Campaign Recipient",
+            recipient.name,
+            {"status": REC_STATUS_SENT, "sent_time": sent_at, "failure_reason": None},
+        )
+
+    except GlificTerminalError as exc:
+        frappe.logger("tap_buddy_dispatch").error(
+            f"[DISPATCH] Terminal error for {recipient.name} group={recipient.whatsapp_group}: {exc}"
+        )
+        _update_dispatch_attempt_failure(attempt_name, str(exc))
+        _mark_failed(recipient, str(exc), increment_retry=False, terminal=True)
+
+    except Exception as exc:
+        frappe.logger("tap_buddy_dispatch").exception(
+            f"[DISPATCH] Transient error for {recipient.name} group={recipient.whatsapp_group}"
+        )
+        _update_dispatch_attempt_failure(attempt_name, str(exc))
+        _mark_failed(recipient, str(exc), increment_retry=True, terminal=False)
+
+
+def _dispatch_school_recipient(client, campaign, recipient):
     school = frappe.get_doc("School", recipient.school)
     phone = normalize_phone_number(school.whatsapp_number)
 
@@ -369,25 +425,21 @@ def _dispatch_recipient(client, campaign, recipient):
         frappe.logger("tap_buddy_dispatch").error(
             f"[DISPATCH] Terminal error for {recipient.name} phone={phone}: {exc}"
         )
-        _mark_failed(recipient, str(exc), attempt_name, terminal=True)
-        _create_message_log(campaign, school, phone, message, {"error": str(exc)}, None, REC_STATUS_FAILED, None)
-    except GlificAPIError as exc:
-        frappe.logger("tap_buddy_dispatch").warning(
-            f"[DISPATCH] Transient error for {recipient.name} phone={phone}: {exc}"
-        )
-        _mark_failed(recipient, str(exc), attempt_name, terminal=False)
-        _create_message_log(campaign, school, phone, message, {"error": str(exc)}, None, REC_STATUS_FAILED, None)
+        _update_dispatch_attempt_failure(attempt_name, str(exc))
+        _mark_failed(recipient, str(exc), increment_retry=False, terminal=True)
     except Exception as exc:
-        frappe.log_error(title="Dispatch Error", message=frappe.get_traceback())
-        _mark_failed(recipient, str(exc), attempt_name, terminal=False)
-        _create_message_log(campaign, school, phone, message, {"error": str(exc)}, None, REC_STATUS_FAILED, None)
+        frappe.logger("tap_buddy_dispatch").exception(
+            f"[DISPATCH] Transient error for {recipient.name} phone={phone}"
+        )
+        _update_dispatch_attempt_failure(attempt_name, str(exc))
+        _mark_failed(recipient, str(exc), increment_retry=True, terminal=False)
 
     frappe.db.commit()
 
 
-def _render_message(campaign, school):
+def _render_message(campaign, school=None):
     template_text = _get_template_text(campaign)
-    context = get_recipient_context(school.name)
+    context = get_recipient_context(school.name if school else None)
     return render_template(template_text, context)
 
 
@@ -505,10 +557,13 @@ def _build_hsm_parameters(campaign, school):
 
 
 
-def _create_message_log(campaign, school, phone, message, response, provider_id, status, sent_at):
+def _create_message_log(campaign, school, phone, message, response, provider_id, status, sent_at, whatsapp_group=None):
     log = frappe.new_doc("Message Log")
     log.campaign = campaign.name
-    log.school = school.name
+    if school:
+        log.school = school.name
+    if whatsapp_group:
+        log.whatsapp_group = whatsapp_group
     log.phone_number = phone
     log.message = message
     log.status = status
@@ -518,11 +573,14 @@ def _create_message_log(campaign, school, phone, message, response, provider_id,
     log.insert(ignore_permissions=True)
 
 
-def _create_dispatch_attempt(campaign, recipient, phone, message, idempotency_key):
+def _create_dispatch_attempt(campaign, recipient, phone, message, idempotency_key, whatsapp_group=None):
     attempt = frappe.new_doc("Dispatch Attempt")
     attempt.campaign = campaign.name
     attempt.recipient = recipient.name
-    attempt.school = recipient.school
+    if recipient.school:
+        attempt.school = recipient.school
+    if whatsapp_group:
+        attempt.whatsapp_group = whatsapp_group
     attempt.phone_number = phone
     attempt.message = message
     attempt.status = ATTEMPT_STATUS_QUEUED
@@ -541,6 +599,16 @@ def _update_dispatch_attempt_success(attempt_name, response, provider_id):
             "status": ATTEMPT_STATUS_SENT,
             "api_response": frappe.as_json(response),
             "provider_message_id": provider_id,
+        },
+    )
+
+def _update_dispatch_attempt_failure(attempt_name, error_message):
+    frappe.db.set_value(
+        "Dispatch Attempt",
+        attempt_name,
+        {
+            "status": ATTEMPT_STATUS_FAILED,
+            "error_message": error_message,
         },
     )
 

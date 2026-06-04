@@ -20,7 +20,9 @@
   "delivered_count",
   "failed_count",
   "amended_from",
-  "variable_mappings"
+  "variable_mappings",
+  "target_group",
+  "target_collection"
  ],
  "fields": [
   {
@@ -84,7 +86,7 @@
    "fieldname": "targeting_type",
    "fieldtype": "Select",
    "label": "Targeting Type",
-   "options": "Single School\nSchool Group",
+   "options": "Single School\nSchool Group\nWhatsApp Group Collection\nWhatsApp Group",
    "reqd": 1
   },
   {
@@ -139,11 +141,29 @@
    "fieldtype": "Table",
    "label": "Variable Mappings",
    "options": "Template Variable Mapping"
+  },
+  {
+   "depends_on": "eval:doc.targeting_type==\"WhatsApp Group\"",
+   "fieldname": "target_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Group",
+   "mandatory_depends_on": "eval:doc.targeting_type==\"WhatsApp Group\"",
+   "options": "WhatsApp Group"
+  },
+  {
+   "depends_on": "eval:doc.targeting_type==\"WhatsApp Group Collection\"",
+   "fieldname": "target_collection",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Group Collection",
+   "mandatory_depends_on": "eval:doc.targeting_type==\"WhatsApp Group Collection\"",
+   "options": "WhatsApp Group Collection"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-01 13:59:07.554143",
+ "modified": "2026-06-04 19:21:58.153330",
  "modified_by": "Administrator",
  "module": "TAP Buddy",
  "name": "TAP Campaign",

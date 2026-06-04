@@ -25,19 +25,15 @@ from tap_buddy.utils.phone import normalize_phone_number
 # ─── Public API ──────────────────────────────────────────────────────────────
 
 @frappe.whitelist()
-def sync_all_students():
-    """Pull all students from LMS and upsert them into TAP Buddy.
-
-    Returns a summary dict::
-        {
-            "status": "ok",
-            "total_fetched": 150,
-            "created": 12,
-            "updated": 138,
-            "skipped": 0,
-            "errors": 0,
-        }
+def sync_all_students(limit_start=0):
+    """Pull all students from LMS and upsert them into TAP Buddy in paginated chunks.
+    Automatically enqueues continuation jobs to avoid 300s RQ timeouts.
     """
+    import time
+    start_time = time.time()
+    PAGE_SIZE = 500
+    SAFE_TIMEOUT = 240  # 4 minutes
+
     _school_cache.clear()
 
     settings = frappe.get_single("LMS Integration Settings")
@@ -45,32 +41,58 @@ def sync_all_students():
         return {"status": "disabled"}
 
     client = LMSClient()
-    try:
-        students = client.get_all_students()
-    except LMSAPIError as e:
-        frappe.log_error(title="LMS Student Sync — API Error", message=str(e))
-        return {"status": "error", "error": str(e)}
+    stats = {"total_fetched": 0, "created": 0, "updated": 0, "skipped": 0, "errors": 0}
+    limit_start = int(limit_start)
 
-    stats = {"total_fetched": len(students), "created": 0, "updated": 0, "skipped": 0, "errors": 0}
-
-    for raw in students:
+    while True:
         try:
-            result = _upsert_student(raw)
-            stats[result] += 1
-        except Exception:
-            stats["errors"] += 1
-            frappe.log_error(
-                title="LMS Student Sync — Upsert Error",
-                message=frappe.get_traceback()
+            resp = client.get_students(
+                limit_page_length=PAGE_SIZE,
+                limit_start=limit_start
             )
+            page_data = resp.get("data", []) if isinstance(resp, dict) else (resp or [])
+        except LMSAPIError as e:
+            frappe.log_error(title="LMS Student Sync — API Error", message=str(e))
+            return {"status": "error", "error": str(e)}
 
-    # Update last sync timestamp
-    settings.last_polled_at = now_datetime()
-    settings.save(ignore_permissions=True)
+        if not page_data:
+            # End of pagination
+            settings.last_polled_at = now_datetime()
+            settings.save(ignore_permissions=True)
+            frappe.db.commit()
+            break
 
-    frappe.logger("lms_sync").info(
-        f"LMS Student Sync complete: {stats}"
-    )
+        stats["total_fetched"] += len(page_data)
+
+        for raw in page_data:
+            try:
+                result = _upsert_student(raw)
+                stats[result] += 1
+            except Exception:
+                stats["errors"] += 1
+                frappe.log_error(
+                    title="LMS Student Sync — Upsert Error",
+                    message=frappe.get_traceback()
+                )
+
+        # Commit this chunk to database to ensure partial progress is saved
+        frappe.db.commit()
+        
+        limit_start += PAGE_SIZE
+
+        # Check if we are approaching the RQ worker timeout
+        elapsed = time.time() - start_time
+        if elapsed > SAFE_TIMEOUT:
+            frappe.logger("lms_sync").info(f"Student Sync approaching timeout ({elapsed}s). Enqueueing continuation from offset {limit_start}.")
+            frappe.enqueue(
+                "tap_buddy.services.lms_student_sync.sync_all_students",
+                limit_start=limit_start,
+                queue="default",
+                timeout=300
+            )
+            return {"status": "enqueued_continuation", **stats}
+
+    frappe.logger("lms_sync").info(f"LMS Student Sync complete: {stats}")
     return {"status": "ok", **stats}
 
 
