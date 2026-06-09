@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:flow_id",
+ "creation": "2026-06-09 11:37:07.767047",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "flow_id",
+  "flow_name",
+  "flow_type",
+  "is_active",
+  "is_background"
+ ],
+ "fields": [
+  {
+   "fieldname": "flow_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Flow ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "flow_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Flow Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "flow_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Flow Type"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_background",
+   "fieldtype": "Check",
+   "label": "Is Background"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-06-09 11:37:23.451800",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "Glific Flow",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "search_fields": "flow_name,flow_id",
+ "sort_field": "flow_name",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "flow_name"
+}
