@@ -311,10 +311,75 @@ def process_glific_sync():
     sync_glific()
 
 def _dispatch_recipient(client, campaign, recipient):
-    if getattr(recipient, "whatsapp_group", None):
-        _dispatch_group_recipient(client, campaign, recipient)
+    campaign_type = getattr(campaign, "campaign_type", "Template")
+    
+    if campaign_type == "Flow":
+        _dispatch_flow_campaign(client, campaign, recipient)
     else:
-        _dispatch_school_recipient(client, campaign, recipient)
+        if getattr(recipient, "whatsapp_group", None):
+            _dispatch_group_recipient(client, campaign, recipient)
+        else:
+            _dispatch_school_recipient(client, campaign, recipient)
+
+def _dispatch_flow_campaign(client, campaign, recipient):
+    if getattr(recipient, "whatsapp_group", None):
+        _mark_failed(recipient, "Group flows are currently unsupported.", increment_retry=False, terminal=True)
+        return
+
+    school = frappe.get_doc("School", recipient.school) if recipient.school else None
+    phone = normalize_phone_number(school.whatsapp_number) if school else None
+
+    if not phone:
+        _mark_failed(recipient, "Missing WhatsApp number", increment_retry=False, terminal=True)
+        return
+
+    flow_id = campaign.glific_flow
+    if not flow_id:
+        _mark_failed(recipient, "Campaign missing Glific Flow ID", increment_retry=False, terminal=True)
+        return
+        
+    context = get_recipient_context(school.name if school else None)
+    
+    idempotency_key = f"tap_{campaign.name}_{recipient.name}_flow"
+    frappe.db.set_value("Campaign Recipient", recipient.name, "idempotency_key", idempotency_key)
+    
+    # Store flow metadata in the attempt instead of a rendered message
+    message_placeholder = f"Flow Execution: {flow_id}"
+    attempt_name = _create_dispatch_attempt(campaign, recipient, phone, message_placeholder, idempotency_key)
+    
+    sent_at = now_datetime()
+    try:
+        response = client.start_contact_flow(phone, flow_id, default_results=context)
+        
+        frappe.logger("tap_buddy_dispatch").info(
+            f"[DISPATCH] Recipient {recipient.name} started Flow "
+            f"flow_id={flow_id} phone={phone}"
+        )
+        
+        _update_dispatch_attempt_success(attempt_name, response, f"flow_{flow_id}")
+        
+        # In a Flow context, we don't receive an immediate provider_message_id for tracking.
+        # Flow state tracking relies on webhooks. We mark as Sent to denote the trigger fired.
+        frappe.db.set_value(
+            "Campaign Recipient",
+            recipient.name,
+            {"status": REC_STATUS_SENT, "sent_time": sent_at, "failure_reason": None},
+        )
+        
+    except GlificTerminalError as exc:
+        frappe.logger("tap_buddy_dispatch").error(
+            f"[DISPATCH] Terminal flow error for {recipient.name} phone={phone}: {exc}"
+        )
+        _update_dispatch_attempt_failure(attempt_name, str(exc))
+        _mark_failed(recipient, str(exc), increment_retry=False, terminal=True)
+        
+    except Exception as exc:
+        frappe.logger("tap_buddy_dispatch").exception(
+            f"[DISPATCH] Transient flow error for {recipient.name} phone={phone}"
+        )
+        _update_dispatch_attempt_failure(attempt_name, str(exc))
+        _mark_failed(recipient, str(exc), increment_retry=True, terminal=False)
+
 
 def _dispatch_group_recipient(client, campaign, recipient):
     group = frappe.get_doc("WhatsApp Group", recipient.whatsapp_group)

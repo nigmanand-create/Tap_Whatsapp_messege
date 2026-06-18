@@ -175,6 +175,7 @@ scheduler_events = {
 	],
 	"daily": [
 		"tap_buddy.services.group_collection_sync.sync_collections_and_groups",
+		"tap_buddy.services.flow_sync.sync_glific_flows",
 	],
 }
 

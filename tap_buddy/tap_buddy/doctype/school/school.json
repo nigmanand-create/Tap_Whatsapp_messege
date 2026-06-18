@@ -59,11 +59,10 @@
    "label": "Block"
   },
   {
+   "description": "School name/ID from LMS (e.g. Test-SC12711)",
    "fieldname": "lms_id",
    "fieldtype": "Data",
-   "label": "LMS School ID",
-   "unique": 0,
-   "description": "School name/ID from LMS (e.g. Test-SC12711)"
+   "label": "LMS School ID"
   },
   {
    "fieldname": "lms_school_status",
@@ -73,7 +72,7 @@
   }
  ],
  "links": [],
- "modified": "2026-05-15 20:13:49.523476",
+ "modified": "2026-06-05 12:01:46.165805",
  "modified_by": "Administrator",
  "module": "TAP Buddy",
  "name": "School",

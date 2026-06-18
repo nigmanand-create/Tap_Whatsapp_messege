@@ -8,6 +8,8 @@
   "naming_series",
   "campaign_name",
   "school_name",
+  "campaign_type",
+  "glific_flow",
   "template",
   "message_template",
   "send_date",
@@ -52,11 +54,29 @@
    "options": "School"
   },
   {
+   "default": "Template",
+   "fieldname": "campaign_type",
+   "fieldtype": "Select",
+   "label": "Campaign Type",
+   "options": "Template\nFlow",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "depends_on": "eval:doc.campaign_type==\"Flow\"",
+   "fieldname": "glific_flow",
+   "fieldtype": "Link",
+   "label": "Glific Flow",
+   "mandatory_depends_on": "eval:doc.campaign_type==\"Flow\"",
+   "options": "Glific Flow"
+  },
+  {
+   "depends_on": "eval:doc.campaign_type==\"Template\"",
    "fieldname": "template",
    "fieldtype": "Link",
    "label": "WhatsApp Template",
-   "options": "WhatsApp Template",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.campaign_type==\"Template\"",
+   "options": "WhatsApp Template"
   },
   {
    "fieldname": "message_template",
@@ -163,7 +183,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-04 19:21:58.153330",
+ "modified": "2026-06-05 12:01:46.843657",
  "modified_by": "Administrator",
  "module": "TAP Buddy",
  "name": "TAP Campaign",

@@ -25,6 +25,12 @@ frappe.ui.form.on("TAP Campaign", {
                 });
             });
         }
+        
+        frm.set_query("target_collection", function() {
+            return {
+                query: "tap_buddy.api.campaign.get_populated_collections"
+            };
+        });
     },
     template: function(frm) {
         if (frm.doc.template) {

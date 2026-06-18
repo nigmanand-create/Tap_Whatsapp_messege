@@ -1288,6 +1288,70 @@ class GlificClient:
         )
         return tmpl
 
+    # ------------------------------------------------------------------
+    # Flow execution
+    # ------------------------------------------------------------------
+
+    def get_flows(self, is_active=True, limit=1000):
+        """
+        Fetch flows from Glific.
+        """
+        query = """
+        query flows($filter: FlowFilter, $opts: Opts) {
+            flows(filter: $filter, opts: $opts) {
+                id
+                name
+                flowType
+                isActive
+                isBackground
+            }
+        }
+        """
+        variables = {
+            "filter": {"isActive": is_active},
+            "opts": {"limit": limit}
+        }
+        result = self._graphql_request(query, variables)
+        return result.get("flows") or []
+
+    def start_contact_flow(self, phone, flow_id, default_results=None):
+        """
+        Trigger a Glific Flow for a specific contact.
+        """
+        print(f"DEBUG: start_contact_flow called phone={phone} flow_id={flow_id}")
+        contact = self.get_contact(phone)
+        contact_id = _extract_contact_id(contact)
+        if not contact_id:
+            created = self.create_contact({"name": phone, "phone": phone})
+            contact_id = _extract_contact_id(created)
+        if not contact_id:
+            raise GlificAPIError(f"Unable to resolve Glific contact for phone {phone}")
+
+        mutation = """
+        mutation startContactFlow($contactId: ID!, $flowId: ID!, $defaultResults: Json) {
+            startContactFlow(contactId: $contactId, flowId: $flowId, defaultResults: $defaultResults) {
+                success
+                errors { key message }
+            }
+        }
+        """
+        variables = {
+            "contactId": _coerce_glific_id(contact_id),
+            "flowId": _coerce_glific_id(flow_id),
+        }
+        if default_results is not None:
+            # Glific requires Json scalar, which is passed as a string or raw json depending on client
+            # Let's pass it as a JSON string
+            variables["defaultResults"] = json.dumps(default_results) if isinstance(default_results, dict) else default_results
+
+        result = self._graphql_request(mutation, variables).get("startContactFlow") or {}
+        errors = result.get("errors")
+        if errors:
+            raise GlificTerminalError(f"Terminal Glific Error: startContactFlow - {_serialize_graphql_errors(errors)}")
+        
+        return result
+
+
 
 def _extract_contact_id(response):
     if not response:

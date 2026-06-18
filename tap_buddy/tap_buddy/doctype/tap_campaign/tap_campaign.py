@@ -28,16 +28,19 @@ class TAPCampaign(Document):
         if targeting_type == "School Group" and not self.school_group:
             frappe.throw("School Group is required")
 
-        # Check Template
-        if not self.template:
-            frappe.throw("WhatsApp Template is required")
+        # Check Campaign Type Requirements
+        campaign_type = getattr(self, "campaign_type", "Template")
+        if campaign_type == "Template":
+            if not getattr(self, "template", None):
+                frappe.throw("WhatsApp Template is required")
+            self._sync_message_template()
+        elif campaign_type == "Flow":
+            if not getattr(self, "glific_flow", None):
+                frappe.throw("Glific Flow is required")
 
         # Check Send Date
-        if not self.send_date:
+        if not getattr(self, "send_date", None):
             frappe.throw("Send Date is required")
-
-        self._sync_message_template()
-
 
     def on_submit(self):
         # Queue-first: submit only enqueues, dispatch builds recipients/logs
