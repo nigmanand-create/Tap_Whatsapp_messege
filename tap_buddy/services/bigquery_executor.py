@@ -19,6 +19,8 @@ class JSONEncoderCustom(json.JSONEncoder):
             return float(obj)
         return super().default(obj)
 
+import os
+
 def get_bq_client(mock_mode=False):
     if mock_mode:
         return None
@@ -31,11 +33,32 @@ def get_bq_client(mock_mode=False):
     if not sa_json_str:
         frappe.throw("Service Account JSON is missing.", exc=frappe.exceptions.ValidationError)
         
-    try:
-        sa_info = json.loads(sa_json_str)
-    except json.JSONDecodeError as e:
-        frappe.throw(f"Invalid Service Account JSON: {str(e)}", exc=frappe.exceptions.ValidationError)
+    sa_json_str = sa_json_str.strip()
+    sa_info = None
+
+    if sa_json_str.startswith("{"):
+        try:
+            sa_info = json.loads(sa_json_str)
+        except json.JSONDecodeError as e:
+            frappe.throw(f"Invalid Service Account JSON: {str(e)}", exc=frappe.exceptions.ValidationError)
+    else:
+        # Treat as file path
+        if not os.path.exists(sa_json_str):
+            frappe.throw(f"Service Account file not found: {sa_json_str}", exc=frappe.exceptions.ValidationError)
         
+        try:
+            with open(sa_json_str, "r") as f:
+                sa_info = json.load(f)
+        except json.JSONDecodeError as e:
+            frappe.throw(f"Invalid Service Account JSON in file: {str(e)}", exc=frappe.exceptions.ValidationError)
+        except Exception as e:
+            frappe.throw(f"Failed to read Service Account file: {str(e)}", exc=frappe.exceptions.ValidationError)
+
+    required_fields = ["project_id", "private_key", "client_email"]
+    for field in required_fields:
+        if field not in sa_info:
+            frappe.throw(f"Missing required service account field: {field}", exc=frappe.exceptions.ValidationError)
+
     credentials = service_account.Credentials.from_service_account_info(sa_info)
     return bigquery.Client(credentials=credentials, project=settings.project_id)
 

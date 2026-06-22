@@ -1,5 +1,6 @@
 import json
 import unittest
+from unittest.mock import patch
 import datetime
 import decimal
 import frappe
@@ -67,3 +68,103 @@ class TestBigQueryProxy(unittest.TestCase):
         # Verify it serialized parameters correctly
         payload_parsed = json.loads(result[0]["payload"])
         self.assertEqual(payload_parsed["id"], 5)
+
+    @patch("tap_buddy.services.bigquery_executor.service_account.Credentials.from_service_account_info")
+    @patch("tap_buddy.services.bigquery_executor.bigquery.Client")
+    @patch("tap_buddy.services.bigquery_executor.frappe.get_single")
+    def test_credentials_raw_json(self, mock_get_single, mock_bq_client, mock_from_sa):
+        """Test raw JSON string parsing."""
+        valid_json = '{"project_id": "test", "private_key": "key", "client_email": "email"}'
+        
+        mock_settings = unittest.mock.MagicMock()
+        mock_settings.enabled = 1
+        mock_settings.project_id = "test_project"
+        mock_settings.get_password.return_value = valid_json
+        mock_get_single.return_value = mock_settings
+        
+        from tap_buddy.services.bigquery_executor import get_bq_client
+        get_bq_client(mock_mode=False)
+        
+        mock_from_sa.assert_called_once()
+        args = mock_from_sa.call_args[0][0]
+        self.assertEqual(args["project_id"], "test")
+
+    @patch("tap_buddy.services.bigquery_executor.service_account.Credentials.from_service_account_info")
+    @patch("tap_buddy.services.bigquery_executor.bigquery.Client")
+    @patch("os.path.exists")
+    @patch("builtins.open", new_callable=unittest.mock.mock_open, read_data='{"project_id": "file_test", "private_key": "key", "client_email": "email"}')
+    @patch("tap_buddy.services.bigquery_executor.frappe.get_single")
+    def test_credentials_file_path(self, mock_get_single, mock_file, mock_exists, mock_bq_client, mock_from_sa):
+        """Test reading credentials from a valid file path."""
+        mock_exists.return_value = True
+        
+        mock_settings = unittest.mock.MagicMock()
+        mock_settings.enabled = 1
+        mock_settings.project_id = "test_project"
+        mock_settings.get_password.return_value = "/path/to/creds.json"
+        mock_get_single.return_value = mock_settings
+        
+        from tap_buddy.services.bigquery_executor import get_bq_client
+        get_bq_client(mock_mode=False)
+        
+        mock_file.assert_called_once_with("/path/to/creds.json", "r")
+        mock_from_sa.assert_called_once()
+        args = mock_from_sa.call_args[0][0]
+        self.assertEqual(args["project_id"], "file_test")
+
+    @patch("os.path.exists")
+    @patch("tap_buddy.services.bigquery_executor.frappe.get_single")
+    def test_credentials_missing_file(self, mock_get_single, mock_exists):
+        """Test error when file is missing."""
+        mock_exists.return_value = False
+        
+        mock_settings = unittest.mock.MagicMock()
+        mock_settings.enabled = 1
+        mock_settings.project_id = "test_project"
+        mock_settings.get_password.return_value = "/invalid/path.json"
+        mock_get_single.return_value = mock_settings
+        
+        from tap_buddy.services.bigquery_executor import get_bq_client
+        
+        with self.assertRaises(frappe.exceptions.ValidationError) as context:
+            get_bq_client(mock_mode=False)
+            
+        self.assertIn("Service Account file not found", str(context.exception))
+
+    @patch("os.path.exists")
+    @patch("builtins.open", new_callable=unittest.mock.mock_open, read_data='{invalid_json')
+    @patch("tap_buddy.services.bigquery_executor.frappe.get_single")
+    def test_credentials_invalid_json(self, mock_get_single, mock_file, mock_exists):
+        """Test error when file contains invalid JSON."""
+        mock_exists.return_value = True
+        
+        mock_settings = unittest.mock.MagicMock()
+        mock_settings.enabled = 1
+        mock_settings.project_id = "test_project"
+        mock_settings.get_password.return_value = "/path/to/bad.json"
+        mock_get_single.return_value = mock_settings
+        
+        from tap_buddy.services.bigquery_executor import get_bq_client
+        
+        with self.assertRaises(frappe.exceptions.ValidationError) as context:
+            get_bq_client(mock_mode=False)
+            
+        self.assertIn("Invalid Service Account JSON in file", str(context.exception))
+
+    @patch("tap_buddy.services.bigquery_executor.frappe.get_single")
+    def test_credentials_missing_fields(self, mock_get_single):
+        """Test error when JSON is missing required BigQuery fields."""
+        incomplete_json = '{"project_id": "test"}'
+        
+        mock_settings = unittest.mock.MagicMock()
+        mock_settings.enabled = 1
+        mock_settings.project_id = "test_project"
+        mock_settings.get_password.return_value = incomplete_json
+        mock_get_single.return_value = mock_settings
+        
+        from tap_buddy.services.bigquery_executor import get_bq_client
+        
+        with self.assertRaises(frappe.exceptions.ValidationError) as context:
+            get_bq_client(mock_mode=False)
+            
+        self.assertIn("Missing required service account field: private_key", str(context.exception))
