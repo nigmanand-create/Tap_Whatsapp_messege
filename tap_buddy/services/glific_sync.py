@@ -1,7 +1,7 @@
 import frappe
 from frappe.utils import now_datetime
 
-from tap_buddy.services.glific_client import GlificClient, GlificAPIError
+from tap_buddy.services.glific_client import GlificClient, GlificAPIError, normalize_phone
 from tap_buddy.utils.phone import normalize_phone_number
 
 
@@ -167,7 +167,7 @@ def _sync_group_memberships(client, settings, group_map):
             school = frappe.get_doc("School", member.school)
             payload = {
                 "name": school.school_name,
-                "phone": normalize_phone_number(school.whatsapp_number),
+                "phone": normalize_phone(normalize_phone_number(school.whatsapp_number)),
             }
             if not payload.get("phone"):
                 continue
@@ -206,7 +206,7 @@ def _get_field_mappings():
 def _build_contact_payload(school, mappings):
     payload = {
         "name": school.school_name,
-        "phone": normalize_phone_number(school.whatsapp_number),
+        "phone": normalize_phone(normalize_phone_number(school.whatsapp_number)),
         "fields": {},
     }
 

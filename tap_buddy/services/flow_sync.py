@@ -1,6 +1,7 @@
 import frappe
 from tap_buddy.services.glific_client import GlificClient
 
+@frappe.whitelist()
 def sync_glific_flows():
     """
     Fetch active flows from Glific and upsert them into the local 'Glific Flow' DocType.

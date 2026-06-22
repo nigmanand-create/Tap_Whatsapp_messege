@@ -79,11 +79,12 @@
    "options": "WhatsApp Template"
   },
   {
+   "depends_on": "eval:doc.campaign_type==\"Template\"",
    "fieldname": "message_template",
    "fieldtype": "Small Text",
    "label": "Message Template",
-   "read_only": 1,
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.campaign_type==\"Template\"",
+   "read_only": 1
   },
   {
    "fieldname": "send_date",

@@ -577,6 +577,7 @@ class GlificClient:
 
     def send_hsm_message(self, phone, template_id, parameters=None):
                 print(f"DEBUG: send_hsm_message called phone={phone} template_id={template_id} parameters={parameters}")
+                phone = normalize_phone(phone)
                 contact = self.get_contact(phone)
                 contact_id = _extract_contact_id(contact)
                 if not contact_id:
@@ -1024,6 +1025,8 @@ class GlificClient:
 
     def get_contact(self, phone):
                 print(f"DEBUG: get_contact called phone={phone}")
+                if phone:
+                    phone = normalize_phone(phone)
                 query = """
                 query contactByPhone($phone: String!) {
                     contactByPhone(phone: $phone) {
@@ -1040,9 +1043,12 @@ class GlificClient:
                 return result.get("contact")
 
     def create_contact(self, payload):
+                phone = payload.get("phone")
+                if phone:
+                    phone = normalize_phone(phone)
                 input_payload = {
-                        "name": payload.get("name") or payload.get("phone"),
-                        "phone": payload.get("phone"),
+                        "name": payload.get("name") or phone,
+                        "phone": phone,
                 }
                 fields = _coerce_glific_fields(payload.get("fields"))
                 if fields:
@@ -1067,9 +1073,12 @@ class GlificClient:
                 return result.get("contact") or {}
 
     def update_contact(self, contact_id, payload):
+                phone = payload.get("phone")
+                if phone:
+                    phone = normalize_phone(phone)
                 input_payload = {
-                        "name": payload.get("name") or payload.get("phone"),
-                        "phone": payload.get("phone"),
+                        "name": payload.get("name") or phone,
+                        "phone": phone,
                 }
                 fields = _coerce_glific_fields(payload.get("fields"))
                 if fields:
@@ -1100,6 +1109,8 @@ class GlificClient:
         phone = payload.get("phone")
         if not phone:
             raise GlificAPIError("Contact payload missing phone")
+        phone = normalize_phone(phone)
+        payload["phone"] = phone
         existing = self.get_contact(phone)
         contact_id = _extract_contact_id(existing)
         if contact_id:
@@ -1315,10 +1326,8 @@ class GlificClient:
         return result.get("flows") or []
 
     def start_contact_flow(self, phone, flow_id, default_results=None):
-        """
-        Trigger a Glific Flow for a specific contact.
-        """
         print(f"DEBUG: start_contact_flow called phone={phone} flow_id={flow_id}")
+        phone = normalize_phone(phone)
         contact = self.get_contact(phone)
         contact_id = _extract_contact_id(contact)
         if not contact_id:
