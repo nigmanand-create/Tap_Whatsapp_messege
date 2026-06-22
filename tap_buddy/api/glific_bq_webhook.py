@@ -75,7 +75,12 @@ def handle():
         safe_row_json = json.dumps(rows[0], cls=JSONEncoderCustom)
         safe_row = json.loads(safe_row_json)
 
-        return safe_row
+        if frappe.flags.in_test:
+            return safe_row
+
+        # Update frappe.response directly instead of returning to avoid {"message": {...}} wrapper
+        frappe.response.update(safe_row)
+        return
 
     except Exception as e:
         frappe.logger("bigquery").error(f"[Glific BQ Webhook] Exception: {str(e)}")
