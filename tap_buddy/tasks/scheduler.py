@@ -322,8 +322,33 @@ def _dispatch_recipient(client, campaign, recipient):
             _dispatch_school_recipient(client, campaign, recipient)
 
 def _dispatch_flow_campaign(client, campaign, recipient):
+    flow_id = campaign.glific_flow
+    if not flow_id:
+        _mark_failed(recipient, "Campaign missing Glific Flow ID", increment_retry=False, terminal=True)
+        return
+
     if getattr(recipient, "whatsapp_group", None):
-        _mark_failed(recipient, "Group flows are currently unsupported.", increment_retry=False, terminal=True)
+        group = frappe.get_doc("WhatsApp Group", recipient.whatsapp_group)
+        group_id = group.glific_group_id
+        
+        idempotency_key = f"tap_{campaign.name}_{recipient.name}_flow"
+        frappe.db.set_value("Campaign Recipient", recipient.name, "idempotency_key", idempotency_key)
+        
+        message_placeholder = f"WA Group Flow Execution: {flow_id}"
+        attempt_name = _create_dispatch_attempt(campaign, recipient, None, message_placeholder, idempotency_key, whatsapp_group=recipient.whatsapp_group)
+        
+        sent_at = now_datetime()
+        try:
+            response = client.start_wa_group_flow(group_id, flow_id)
+            frappe.logger("tap_buddy_dispatch").info(f"[DISPATCH] Recipient {recipient.name} started WA Group Flow flow_id={flow_id} wagroup_id={group_id}")
+            _update_dispatch_attempt_success(attempt_name, response, f"flow_{flow_id}")
+            frappe.db.set_value("Campaign Recipient", recipient.name, {"status": "Sent", "sent_time": sent_at, "failure_reason": None})
+        except GlificTerminalError as exc:
+            _update_dispatch_attempt_failure(attempt_name, str(exc))
+            _mark_failed(recipient, str(exc), increment_retry=False, terminal=True)
+        except Exception as exc:
+            _update_dispatch_attempt_failure(attempt_name, str(exc))
+            _mark_failed(recipient, str(exc), increment_retry=True, terminal=False)
         return
 
     school = frappe.get_doc("School", recipient.school) if recipient.school else None
@@ -333,11 +358,6 @@ def _dispatch_flow_campaign(client, campaign, recipient):
         _mark_failed(recipient, "Missing WhatsApp number", increment_retry=False, terminal=True)
         return
 
-    flow_id = campaign.glific_flow
-    if not flow_id:
-        _mark_failed(recipient, "Campaign missing Glific Flow ID", increment_retry=False, terminal=True)
-        return
-        
     context = get_recipient_context(school.name if school else None)
     
     idempotency_key = f"tap_{campaign.name}_{recipient.name}_flow"

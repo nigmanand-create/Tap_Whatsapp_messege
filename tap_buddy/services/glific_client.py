@@ -148,35 +148,19 @@ class GlificClient:
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
-        # debug at init
-        try:
-            self.debug_auth_state("init")
-        except Exception:
-            print("DEBUG: failed to print auth state at init")
+
 
     def ensure_valid_token(self):
-        try:
-            self.debug_auth_state("ensure_valid_token-enter")
-        except Exception:
-            print("DEBUG: cannot print auth state at ensure_valid_token-enter")
-
         if not self.should_refresh_token():
-            print("DEBUG: ensure_valid_token - token is valid; refresh not required")
             return
 
         if not self.refresh_token:
-            print("DEBUG: ensure_valid_token - refresh_token missing; cannot refresh")
             return
 
         # Token is missing, expired, expiring soon, or token_expiry is unavailable.
         if acquire_lock("glific_token_refresh", timeout=15):
             try:
-                print("DEBUG: ensure_valid_token - performing token refresh")
                 self._perform_token_refresh()
-                try:
-                    self.debug_auth_state("ensure_valid_token-after-refresh")
-                except Exception:
-                    print("DEBUG: cannot print auth state after refresh")
             finally:
                 release_lock("glific_token_refresh")
         else:
@@ -190,19 +174,15 @@ class GlificClient:
                 self.headers["Authorization"] = self.token
             else:
                 self.headers.pop("Authorization", None)
-            print("DEBUG: ensure_valid_token - reloaded token from settings into headers")
 
     def should_refresh_token(self):
         if not self.refresh_token:
-            print("DEBUG: should_refresh_token -> no refresh_token available")
             return False
 
         if not self.token:
-            print("DEBUG: should_refresh_token -> missing access token")
             return True
 
         if not self.token_expiry:
-            print("DEBUG: should_refresh_token -> missing token_expiry")
             return True
 
         try:
@@ -213,29 +193,13 @@ class GlificClient:
                 expiry = expiry.replace(tzinfo=datetime.timezone.utc)
             now = datetime.datetime.now(datetime.timezone.utc)
             if expiry <= now + datetime.timedelta(minutes=5):
-                print("DEBUG: should_refresh_token -> token expired or expiring within 5 minutes")
                 return True
             return False
         except Exception as exc:
-            print(f"DEBUG: should_refresh_token -> invalid expiry format, refreshing token: {repr(exc)}")
+            frappe.logger("tap_buddy_glific").warning(f"Token expiry parse error, forcing refresh: {repr(exc)}")
             return True
 
-    def debug_auth_state(self, label=""):
-        try:
-            def _mask(t):
-                if not t:
-                    return None
-                s = str(t)
-                if len(s) <= 8:
-                    return s
-                return s[:6] + "..." + s[-4:]
 
-            print(f"DEBUG-AUTH [{label}] base_url={self.base_url} graphql_url={self.graphql_url} rest_base={self.rest_base_url}")
-            print(f"DEBUG-AUTH [{label}] token(mask)={_mask(self.token)} refresh(mask)={_mask(self.refresh_token)} primary(mask)={_mask(self.primary_token)} expiry={self.token_expiry}")
-            auth_header = self.headers.get("Authorization") if isinstance(self.headers, dict) else None
-            print(f"DEBUG-AUTH [{label}] headers.Authorization(mask)={_mask(auth_header)} session_cookies_present={bool(getattr(self.session,'cookies',None))}")
-        except Exception as e:
-            print(f"DEBUG-AUTH [{label}] failed to render auth state: {repr(e)}")
 
     def _perform_token_refresh(self):
         url = f"{self.rest_base_url}/session/renew"
@@ -244,13 +208,10 @@ class GlificClient:
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
-        print(f"DEBUG: _perform_token_refresh -> url={url} refresh_token_present={bool(self.refresh_token)}")
         response = None
         try:
             self._log_auth_event("Refresh Started", "Attempting to refresh token via API.", "Info")
-            print("DEBUG: _perform_token_refresh - sending POST")
             response = requests.post(url, headers=headers, json={}, timeout=10)
-            print(f"DEBUG: _perform_token_refresh - got status {getattr(response,'status_code',None)}")
             response.raise_for_status()
             response_data = response.json() or {}
             data = response_data.get("data", response_data)
@@ -268,16 +229,15 @@ class GlificClient:
                 settings.glific_token_expiry = new_expiry
                 settings.save(ignore_permissions=True)
                 frappe.db.commit()
-                old_token = self.token
                 self.token = new_access_token
                 self.refresh_token = new_refresh_token or self.refresh_token
                 self.token_expiry = new_expiry
                 self.headers["Authorization"] = self.token
                 self._log_auth_event("Refresh Succeeded", f"Refreshed token successfully. New expiry: {new_expiry}", "Info")
-                print(f"DEBUG: _perform_token_refresh - refresh succeeded old_token={old_token[:8] if old_token else None} new_token={self.token[:8]}")
+                frappe.logger("tap_buddy_glific").info("Glific token refresh succeeded.")
         except requests.exceptions.HTTPError as e:
             if getattr(response, 'status_code', None) == 401:
-                print("DEBUG: _perform_token_refresh - refresh endpoint returned 401; invalid refresh token detected")
+                frappe.logger("tap_buddy_glific").error("Token refresh returned 401; clearing invalid refresh token.")
                 self.refresh_token = None
                 if self.token:
                     self.headers["Authorization"] = self.token
@@ -286,19 +246,15 @@ class GlificClient:
                     settings.glific_refresh_token = None
                     settings.save(ignore_permissions=True)
                     frappe.db.commit()
-                    print("DEBUG: _perform_token_refresh - cleared invalid refresh token from settings")
                 except Exception as save_exc:
-                    print(f"DEBUG: _perform_token_refresh - failed to clear refresh token from settings: {repr(save_exc)}")
+                    frappe.logger("tap_buddy_glific").error(f"Failed to clear refresh token from settings: {repr(save_exc)}")
             
             self._log_auth_event("Refresh Failed", f"Token refresh failed (HTTP {getattr(response, 'status_code', 'unknown')}): {str(e)}", "Error")
             frappe.logger("tap_buddy_glific").error(f"Token refresh failed: {str(e)}")
-            print(f"DEBUG: _perform_token_refresh exception: {repr(e)}")
         except requests.exceptions.RequestException as e:
             self._log_auth_event("Refresh Failed", f"Token refresh request failed: {str(e)}", "Error")
-            frappe.logger("tap_buddy_glific").error(f"Token refresh failed: {str(e)}")
-            print(f"DEBUG: _perform_token_refresh exception: {repr(e)}")
-            # Do not throw yet; let the actual API call attempt with the old token 
-            # and fail naturally if it truly is expired.
+            frappe.logger("tap_buddy_glific").error(f"Token refresh request failed: {str(e)}")
+            # Do not throw yet; let the actual API call attempt with the old token
             # and fail naturally if it truly is expired.
 
     def _log_auth_event(self, event, message, severity):
@@ -322,7 +278,7 @@ class GlificClient:
             doc.insert(ignore_permissions=True)
             frappe.db.commit()
         except Exception as e:
-            print(f"DEBUG: Failed to log auth event: {e}")
+            frappe.logger("tap_buddy_glific").warning(f"Failed to log auth event: {e}")
 
     def _graphql_request(self, query, variables=None):
         if check_circuit_breaker("glific"):
@@ -355,33 +311,17 @@ class GlificClient:
             "variables": variables or {},
         }
         headers = dict(self.headers)
-        try:
-            self.debug_auth_state("graphql-before")
-        except Exception:
-            print("DEBUG: cannot print auth state before graphql request")
-        print("DEBUG: graphql_url=", self.graphql_url)
-        print("DEBUG: graphql payload=", json.dumps(payload)[:2000])
-
         start_time = time.time()
         try:
             response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=15)
-            print(f"DEBUG: graphql initial response status={getattr(response,'status_code',None)}")
             if response.status_code == 401:
-                print("DEBUG: graphql got 401; attempting refresh and retry")
                 if self.refresh_token:
                     self._perform_token_refresh()
                     headers = dict(self.headers)
-                    try:
-                        self.debug_auth_state("graphql-after-refresh")
-                    except Exception:
-                        print("DEBUG: cannot print auth state after refresh")
                     response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=15)
-                    print(f"DEBUG: graphql after-refresh response status={getattr(response,'status_code',None)}")
                 if response.status_code == 401 and self.primary_token and headers.get("Authorization") != self.primary_token:
-                    print("DEBUG: graphql still 401; retrying once with primary_token fallback")
                     headers["Authorization"] = self.primary_token
                     response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=15)
-                    print(f"DEBUG: graphql primary_token fallback status={getattr(response,'status_code',None)}")
 
             duration_ms = int((time.time() - start_time) * 1000)
 
@@ -394,30 +334,26 @@ class GlificClient:
 
             response.raise_for_status()
             data = response.json() if response.text else {}
-            print("DEBUG: graphql response body (truncated):", str(data)[:2000])
             errors = data.get("errors")
             if errors:
                 record_api_failure("glific")
-                print("DEBUG: graphql errors:", _serialize_graphql_errors(errors))
                 raise GlificTerminalError(f"Terminal Glific Error: 200 - {_serialize_graphql_errors(errors)}")
 
             record_api_success("glific")
             return data.get("data", {})
 
         except requests.exceptions.HTTPError as e:
-            print(f"DEBUG: HTTPError in _graphql_request: {repr(e)}")
             record_api_failure("glific")
             status_code = getattr(e.response, "status_code", 500)
             text = getattr(e.response, "text", str(e))
-
+            frappe.logger("tap_buddy_glific").error(f"GraphQL HTTP error: status={status_code}")
             if status_code in (400, 401, 404):
-                print(f"DEBUG: _graphql_request terminal status {status_code} text {text}")
                 raise GlificTerminalError(f"Terminal Glific Error: {status_code} - {text}")
             raise GlificAPIError(f"Glific API HTTP Error: {status_code} - {text}")
 
         except requests.exceptions.RequestException as e:
-            print(f"DEBUG: RequestException in _graphql_request: {repr(e)}")
             record_api_failure("glific")
+            frappe.logger("tap_buddy_glific").error(f"GraphQL request failed: {repr(e)}")
             raise GlificAPIError(f"Glific API request failed: {str(e)}")
 
     def _request(self, method, path, **kwargs):
@@ -434,14 +370,10 @@ class GlificClient:
             
         start_time = time.time()
         try:
-            print(f"DEBUG: REST call {method} {url} with headers {list(headers.keys())}")
             response = self.session.request(method, url, headers=headers, timeout=15, **kwargs)
-            print(f"DEBUG: REST initial response status={getattr(response,'status_code',None)}")
             if response.status_code == 401 and self.primary_token and headers.get("Authorization") != self.primary_token:
-                print("DEBUG: REST got 401, retrying with primary_token")
                 headers["Authorization"] = self.primary_token
                 response = self.session.request(method, url, headers=headers, timeout=15, **kwargs)
-                print(f"DEBUG: REST retry response status={getattr(response,'status_code',None)}")
 
             duration_ms = int((time.time() - start_time) * 1000)
             
@@ -456,27 +388,20 @@ class GlificClient:
             
             response.raise_for_status()
             record_api_success("glific")
-            try:
-                body = response.json() if response.text else {}
-                print("DEBUG: REST response body (truncated):", str(body)[:2000])
-            except Exception:
-                print("DEBUG: REST response body unreadable")
             return response.json() if response.text else {}
             
         except requests.exceptions.HTTPError as e:
-            print(f"DEBUG: HTTPError in _request: {repr(e)}")
             record_api_failure("glific")
             status_code = getattr(e.response, 'status_code', 500)
             text = getattr(e.response, 'text', str(e))
-            
+            frappe.logger("tap_buddy_glific").error(f"REST HTTP error: method={method} path={path} status={status_code}")
             if status_code in (400, 401, 404):
-                print(f"DEBUG: _request terminal status {status_code} text {text}")
                 raise GlificTerminalError(f"Terminal Glific Error: {status_code} - {text}")
             raise GlificAPIError(f"Glific API HTTP Error: {status_code} - {text}")
             
         except requests.exceptions.RequestException as e:
-            print(f"DEBUG: RequestException in _request: {repr(e)}")
             record_api_failure("glific")
+            frappe.logger("tap_buddy_glific").error(f"REST request failed: method={method} path={path} error={repr(e)}")
             raise GlificAPIError(f"Glific API request failed: {str(e)}")
 
     def authenticate(self):
@@ -484,7 +409,6 @@ class GlificClient:
         return True
 
     def send_message(self, phone, message, idempotency_key=None):
-                print(f"DEBUG: send_message called phone={phone} idempotency_key={idempotency_key}")
                 phone = normalize_phone(phone)
                 contact = self.get_contact(phone)
                 contact_id = _extract_contact_id(contact)
@@ -511,7 +435,7 @@ class GlificClient:
                         }
                 }
 
-                print(f"DEBUG: send_message -> graphql variables (truncated) {json.dumps(variables)[:1000]}")
+
                 result = self._graphql_request(query, variables).get("createAndSendMessage") or {}
                 errors = result.get("errors")
                 if errors:
@@ -552,7 +476,7 @@ class GlificClient:
                 return result.get("message") or {}
 
     def resend_message(self, message_id):
-                print(f"DEBUG: resend_message called message_id={message_id}")
+
                 message = self.get_message(message_id)
                 if not message:
                         raise GlificAPIError(f"Glific message {message_id} not found")
@@ -576,7 +500,6 @@ class GlificClient:
                 return self.send_message(phone, message.get("body") or "")
 
     def send_hsm_message(self, phone, template_id, parameters=None):
-                print(f"DEBUG: send_hsm_message called phone={phone} template_id={template_id} parameters={parameters}")
                 phone = normalize_phone(phone)
                 contact = self.get_contact(phone)
                 contact_id = _extract_contact_id(contact)
@@ -616,7 +539,7 @@ class GlificClient:
                         "parameters": parameters if parameters is not None else None,
                 }
 
-                print(f"DEBUG: send_hsm_message -> graphql variables (truncated) {str(variables)[:1000]}")
+
                 result = self._graphql_request(query, variables).get("sendHsmMessage") or {}
                 errors = result.get("errors")
                 if errors:
@@ -678,7 +601,7 @@ class GlificClient:
             if phones:
                 return phones[0].get("id")
         except Exception as e:
-            print(f"Failed to fetch waManagedPhones: {e}")
+            frappe.logger("tap_buddy_glific").error(f"Failed to fetch waManagedPhones: {e}")
         return None
 
     def send_message_to_group(self, group_id: str, message: str):
@@ -705,7 +628,7 @@ class GlificClient:
         }
         if phone_id:
             variables["input"]["waManagedPhoneId"] = phone_id
-        print(f"DEBUG: send_message_to_group -> {group_id}")
+
         result = self._graphql_request(query, variables).get("sendMessageInWaGroup") or {}
         errors = result.get("errors")
         if errors:
@@ -1045,7 +968,7 @@ class GlificClient:
             return msg, True
 
     def get_contact(self, phone):
-                print(f"DEBUG: get_contact called phone={phone}")
+
                 if phone:
                     phone = normalize_phone(phone)
                 query = """
@@ -1347,7 +1270,7 @@ class GlificClient:
         return result.get("flows") or []
 
     def start_contact_flow(self, phone, flow_id, default_results=None):
-        print(f"DEBUG: start_contact_flow called phone={phone} flow_id={flow_id}")
+
         phone = normalize_phone(phone)
         contact = self.get_contact(phone)
         contact_id = _extract_contact_id(contact)
@@ -1381,7 +1304,24 @@ class GlificClient:
         
         return result
 
-
+    def start_wa_group_flow(self, wa_group_id, flow_id):
+        mutation = """
+        mutation startWaGroupFlow($waGroupId: ID!, $flowId: ID!) {
+            startWaGroupFlow(waGroupId: $waGroupId, flowId: $flowId) {
+                success
+                errors { key message }
+            }
+        }
+        """
+        variables = {
+            "waGroupId": str(_coerce_glific_id(wa_group_id)),
+            "flowId": str(_coerce_glific_id(flow_id))
+        }
+        result = self._graphql_request(mutation, variables).get("startWaGroupFlow") or {}
+        errors = result.get("errors")
+        if errors:
+            raise GlificTerminalError(f"Terminal Glific Error: startWaGroupFlow - {_serialize_graphql_errors(errors)}")
+        return result
 
 def _extract_contact_id(response):
     if not response:

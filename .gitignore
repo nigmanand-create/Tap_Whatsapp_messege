@@ -14,3 +14,21 @@ cypress.env.json
 # Security
 cookies.txt
 *.log
+
+# Investigation / forensic scripts - not for production
+*_output.txt
+tap_buddy/verify_*.py
+tap_buddy/forensic_*.py
+tap_buddy/introspect_*.py
+tap_buddy/evidence_*.py
+tap_buddy/analyze_flows.py
+tap_buddy/runner.py
+tap_buddy/fetch_flow*.py
+tap_buddy/find_warm_greetings.py
+tap_buddy/deep_investigation.py
+tap_buddy/check_group_messages.py
+tap_buddy/create_e2e_campaign.py
+tap_buddy/create_collection_doctypes.py
+tap_buddy/append_docs.py
+tap_buddy/capture_glific_evidence.py
+debug_camp.py
