@@ -1,0 +1,178 @@
+DEBUG-AUTH [init] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [init] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [init] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+=== 1. Fetching Active Flows ===
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    query {\n      flows(filter: { isActive: true }, opts: { limit: 15 }) {\n        id\n        name\n      }\n    }\n    ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'flows': [{'id': '11273', 'name': '---'}, {'id': '6125', 'name': '....'}, {'id': '15079', 'name': '0.3 Content Start'}, {'id': '15122', 'name': '0.4 Goodbye'}, {'id': '15153', 'name': '0.7 BotReferral'}, {'id': '6158', 'name': '0987'}, {'id': '4555', 'name': '1000 points flow '}, {'id': '4558', 'name': '1000 puzzle flow '}, {'id': '4561', 'name': '1000 Trip Flow'}, {'id': '4559', 'name': '1000 You tube Flow '}, {'id': '15123', 'name': '1.0 Career Information '}, {'id': '15129', 'name': '1.1 Entrepreneur, Sales, Office Roles'}, {'id': '31762', 'name': '12/Aug_OnboardTlm25_Student'}, {'id': '32010', 'name': '12/BatchUpgrade'}, {'id': '31923', 'name': '12/CourseUpgrade'}]}}
+Found 16 flows to analyze.
+Exporting flow 40067: Flow 40067
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 40067) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[],"flows":[{"definition":{"vars":["1f8189dd-122c-4b36-9e37-73a8568c8f59"],"uuid":"1f8189dd-122c-4b36-9e37-73a8568c8f59","type":"messaging","spec_version":"14.3.0","nodes":[{"uuid":"59990feb-8e23-4b64-bd33-b5f8266b1ff9","exits":[{"uuid":"468dd31c-1191-47e1-9cd9-d7d438224cb3","destination_uuid":null}],"actions":[{"uuid":"bc232819-9ecc-4735-a6be-8886abb34a7b","type":"send_msg","text":"Warm Greetings! 🙏🏻\\n\\nA heartfelt welcome to all Principals and Teachers to The Apprentice Project WhatsApp group.\\n\\nTAP Buddy is an AI-powered WhatsApp chatbot, implemented jointly by the Directorate of Secondary Education, Uttar Pradesh and The Apprentice Project (TAP). The program aims to equip students of Classes 9 to 12 with essential 21st-century life skills.\\n\\nThrough this chatbot, students will receive guidance in two key areas:\\n\\n🔹 Coding - To develop computational thinking, problem-solving, and digital skills.\\n🔹 Financial Literacy - To build an understanding of money management, budgeting, saving, and investing.\\n\\n📱 Students will be able to interact directly with the TAP Buddy Bot on WhatsApp, enabling them to learn independently and engage in a personalized digital learning journey.\\n\\nYour support and guidance as Principals and Teachers are vital to the successful implementation of this program at the school level. We look forward to working together to empower students with future-ready skills.\\n\\nThank you.\\nThe Apprentice Project (TAP)","quick_replies":[],"labels":[],"attachments":[]}]}],"name":"GroupWelcome_WAGroups","localization":{"pa":{"bc232819-9ecc-4735-a6be-8886abb34a7b":{"text":["ਸਤਿਕਾਰ ਸਹਿਤ ਨਮਸਕਾਰ! 🙏🏻\\n\\nਦ ਅਪ੍ਰੈਂਟਿਸ ਪ੍ਰੋਜੈਕਟ ਦੇ ਵਟਸਐਪ ਗਰੁੱਪ ਵਿੱਚ ਸਾਰੇ ਪ੍ਰਿੰਸੀਪਲਾਂ ਅਤੇ ਅਧਿਆਪਕਾਂ ਦਾ ਦਿਲੋਂ ਸਵਾਗਤ ਹੈ।\\n\\nTAP Buddy ਇੱਕ AI-ਸੰਚਾਲਿਤ ਵਟਸਐਪ ਚੈਟਬਾਟ ਹੈ, ਜਿਸਨੂੰ ਉੱਤਰ ਪ੍ਰਦੇਸ਼ ਡਾਇਰੈਕਟੋਰੇਟ ਆਫ ਸੈਕੰਡਰੀ ਐਜੂਕੇਸ਼ਨ ਅਤੇ ਦ ਅਪ੍ਰੈਂਟਿਸ ਪ੍ਰੋਜੈਕਟ (TAP) ਵੱਲੋਂ ਸਾਂਝੇ ਤੌਰ \'ਤੇ ਲਾਗੂ ਕੀਤਾ ਗਿਆ ਹੈ। ਇਸ ਪ੍ਰੋਗਰਾਮ ਦਾ ਉਦੇਸ
+Exporting flow 11273: ---
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 11273) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[],"flows":[{"definition":{"uuid":"8f737684-3971-4263-b03c-c88f524ae760","type":"messaging","spec_version":"13.1.0","revision":1,"nodes":[],"name":"---","language":"base","expire_after_minutes":10080,"_ui":{}},"keywords":[]}],"contact_field":[],"collections":[]}'}}}
+Exporting flow 6125: ....
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 6125) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[],"flows":[{"definition":{"uuid":"327c151c-df13-46f8-bb60-6fc37b6780f3","type":"messaging","spec_version":"13.1.0","revision":1,"nodes":[],"name":"....","language":"base","expire_after_minutes":10080,"_ui":{}},"keywords":["delete"]}],"contact_field":[],"collections":[]}'}}}
+Exporting flow 15079: 0.3 Content Start
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 15079) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': None}, 'errors': [{'message': "Flow doesn't exist, Name - AE_Career Skills_Job Search 1.2 2022-23, UUID - a6d0050c-769f-43a7-b811-79fd9032ca85", 'path': ['exportFlow'], 'locations': [{'line': 3, 'column': 11}]}]}
+DEBUG: graphql errors: Flow doesn't exist, Name - AE_Career Skills_Job Search 1.2 2022-23, UUID - a6d0050c-769f-43a7-b811-79fd9032ca85
+Error exporting flow 15079: Terminal Glific Error: 200 - Flow doesn't exist, Name - AE_Career Skills_Job Search 1.2 2022-23, UUID - a6d0050c-769f-43a7-b811-79fd9032ca85
+Exporting flow 15122: 0.4 Goodbye
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 15122) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': None}, 'errors': [{'message': "Flow doesn't exist, Name - User Purpose, UUID - a4fb6ffd-5a2a-4c33-b1b0-de0da28b6540", 'path': ['exportFlow'], 'locations': [{'line': 3, 'column': 11}]}]}
+DEBUG: graphql errors: Flow doesn't exist, Name - User Purpose, UUID - a4fb6ffd-5a2a-4c33-b1b0-de0da28b6540
+Error exporting flow 15122: Terminal Glific Error: 200 - Flow doesn't exist, Name - User Purpose, UUID - a4fb6ffd-5a2a-4c33-b1b0-de0da28b6540
+Exporting flow 15153: 0.7 BotReferral
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 15153) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': None}, 'errors': [{'message': "Flow doesn't exist, Name - AE_Career Skills_Job Search 1.2 2022-23, UUID - a6d0050c-769f-43a7-b811-79fd9032ca85", 'path': ['exportFlow'], 'locations': [{'line': 3, 'column': 11}]}]}
+DEBUG: graphql errors: Flow doesn't exist, Name - AE_Career Skills_Job Search 1.2 2022-23, UUID - a6d0050c-769f-43a7-b811-79fd9032ca85
+Error exporting flow 15153: Terminal Glific Error: 200 - Flow doesn't exist, Name - AE_Career Skills_Job Search 1.2 2022-23, UUID - a6d0050c-769f-43a7-b811-79fd9032ca85
+Exporting flow 6158: 0987
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 6158) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[{"source_id":6806,"language_id":1,"send_with_title":false,"interactive_content":{"type":"quick_reply","options":[{"type":"text","title":"Yes हाँ"},{"type":"text","title":"No नहीं"}],"content":{"type":"text","text":"Do you Want to join the TAP Program 😍\\n\\nक्या आपको TAP Program में शामिल होना है  😍","header":"IM1_scert"}},"translations":{"1":{"type":"quick_reply","options":[{"type":"text","title":"Yes हाँ"},{"type":"text","title":"No नहीं"}],"content":{"type":"text","text":"Do you Want to join the TAP Program 😍\\n\\nक्या आपको TAP Program में शामिल होना है  😍","header":"IM1_scert"}}},"type":"quick_reply","label":"IM1_scert"}],"flows":[{"definition":{"vars":["f0a17b51-11d7-493e-9061-b058bd74f436"],"uuid":"f0a17b51-11d7-493e-9061-b058bd74f436","type":"messaging","spec_version":"13.1.0","nodes":[{"uuid":"0fc8204d-5bb7-48b9-a5d4-2e61734fced7","exits":[{"uuid":"55719604-1f55-4bfc-8d97-4f62067355f5","destination_uuid":null}],"actions":[{"uuid":"7c36019b-a9a8-49ce-9e04-03385790a293","type":"send_msg","text":"Q2","quick_replies":[],"labels":[],"attachments":[],"all_urns":false}]},{"uuid":"1bd705c1-8a02-470d-bb82-0ba9b61707a4","exits":[{"uuid":"d6a2e775-bf05-4489-a420-df40706d83d4","destination_uuid":"f9a0cc2b-fc1c-4d71-9515-874c6daff686"}],"actions":[{"value":"@results.nlt","uuid":"25630215-dd3b-4eee-825f-dd1cd84ec337","type":"set_contact_field","field":{"name":"nulltest","key":"nulltest"}}]},{"uuid":"07794301-4f4b-4fe7-be6b-3ba2a1f501da","exits":[{"uuid":"b71ae800-5dfe-4f16-99b0-8011ae52f4b2","destination_uuid":"a5bf59e6-a0a3-46f4-94c1-16bd56497d00"}],"actions":[{"uuid":"27bea29f-4702-4455-b1b2-d429176df5cf","type":"send_msg","text":"What is your poc name","quick_replies":[],"labels":[],"attachments":[]}]},{"uuid":"f9a0cc2b-fc1c-4d71-9515-874c6daff686","exits":[{"uuid":"67ca9e49-b6e9-4fec-b14c-e3bccba68197","destination_uuid":"1fa3e4ef-d4fc-4e8a-85b9-d732040f596e"}],"actions":[{"uuid":"c45475ab-7f80-47c4-803
+Exporting flow 4555: 1000 points flow 
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 4555) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[{"source_id":2967,"language_id":1,"send_with_title":false,"interactive_content":{"type":"quick_reply","options":[{"type":"text","title":"Yes!"}],"content":{"type":"text","text":"It\'s raining outside! ☔\\n\\nLet\'s play a *fun quiz* staying inside the house only 🏡\\nReady? 🤩","header":" Pre Induction E2 "}},"translations":{"1":{"type":"quick_reply","options":[{"type":"text","title":"Yes!"}],"content":{"type":"text","text":"It\'s raining outside! ☔\\n\\nLet\'s play a *fun quiz* staying inside the house only 🏡\\nReady? 🤩","header":" Pre Induction E2 "}}},"type":"quick_reply","label":" Pre Induction E2 "},{"source_id":4146,"language_id":1,"send_with_title":false,"interactive_content":{"type":"quick_reply","options":[{"type":"text","title":"👍🏼"},{"type":"text","title":"👎🏼"}],"content":{"type":"text","text":"Did you like the last 4 activities?","header":"5 activities "}},"translations":{"2":{"type":"quick_reply","options":[{"type":"text","title":"👍🏼"},{"type":"text","title":"👎🏼"}],"content":{"type":"text","text":"क्या तुम्हे पिछले  4 activities पसंद आये?","header":"5 activities"}},"1":{"type":"quick_reply","options":[{"type":"text","title":"👍🏼"},{"type":"text","title":"👎🏼"}],"content":{"type":"text","text":"Did you like the last 4 activities?","header":"5 activities "}}},"type":"quick_reply","label":"5 activities "},{"source_id":6028,"language_id":1,"send_with_title":false,"interactive_content":{"type":"list","title":"TLM22 - Teacher Week1 Flow","items":[{"title":"Weekdays","subtitle":"Weekdays","options":[{"type":"text","title":"Monday","description":""},{"type":"text","title":"Tuesday","description":""},{"type":"text","title":"Wednesday","description":""},{"type":"text","title":"Thursday","description":""},{"type":"text","title":"Friday","description":""},{"type":"text","title":"Saturday","description":""}]}],"globalButtons":[{"type":"text","title":"TAP Class Day"}],"body":"Have you added *TAP Class* to 
+Exporting flow 4558: 1000 puzzle flow 
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 4558) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[{"source_id":3925,"language_id":1,"send_with_title":false,"interactive_content":{"type":"quick_reply","options":[{"type":"text","title":"6"},{"type":"text","title":"7"},{"type":"text","title":"8"}],"content":{"type":"text","text":"Choose the answer 😋","header":"1000 points quiz 1 "}},"translations":{"2":{"type":"quick_reply","options":[{"type":"text","title":"6"},{"type":"text","title":"7"},{"type":"text","title":"8"}],"content":{"type":"text","text":"Answer चुनो 😋","header":"1000 points quiz 1 "}},"1":{"type":"quick_reply","options":[{"type":"text","title":"6"},{"type":"text","title":"7"},{"type":"text","title":"8"}],"content":{"type":"text","text":"Choose the answer 😋","header":"1000 points quiz 1 "}}},"type":"quick_reply","label":"1000 points quiz 1 "},{"source_id":3926,"language_id":1,"send_with_title":false,"interactive_content":{"type":"quick_reply","options":[{"type":"text","title":"A"},{"type":"text","title":"B"},{"type":"text","title":"C"}],"content":{"type":"text","text":"Find the missing Tiger piece in the puzzle 🐯","header":"1000 points quiz 2 "}},"translations":{"2":{"type":"quick_reply","options":[{"type":"text","title":"A"},{"type":"text","title":"B"},{"type":"text","title":"C"}],"content":{"type":"text","text":"पहेली में लापता बाघ का टुकड़ा खोजो 🐯","header":"1000 points quiz 2 "}},"1":{"type":"quick_reply","options":[{"type":"text","title":"A"},{"type":"text","title":"B"},{"type":"text","title":"C"}],"content":{"type":"text","text":"Find the missing Tiger piece in the puzzle 🐯","header":"1000 points quiz 2 "}}},"type":"quick_reply","label":"1000 points quiz 2 "}],"flows":[{"definition":{"vars":["67d24576-b2b6-4587-92a4-08439edf5a20"],"uuid":"67d24576-b2b6-4587-92a4-08439edf5a20","type":"messaging","spec_version":"13.2.0","nodes":[{"uuid":"580a3ac7-0a62-4967-bbb0-a819d36fb7d2","exits":[{"uuid":"72f67177-cefd-4a22-aff1-d650598abba7","destination_uuid":"c7d87f0e-77c2-46a1-8730-7ee87c319b4
+Exporting flow 4561: 1000 Trip Flow
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 4561) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[{"source_id":4050,"language_id":1,"send_with_title":false,"interactive_content":{"type":"quick_reply","options":[{"type":"text","title":"Beach/Water place 🌊"},{"type":"text","title":"Mountains ⛰️"},{"type":"text","title":"Monuments 🕌"}],"content":{"type":"text","text":"Tell me 😊","header":"1000 Points Ghumo India"}},"translations":{"2":{"type":"quick_reply","options":[{"type":"text","title":"बीच/पानी वाली जगह 🌊"},{"type":"text","title":"पहाड़ ⛰️"},{"type":"text","title":"स्मारक 🕌"}],"content":{"type":"text","text":"Tell me 😊","header":"1000 Points Ghumo India"}},"1":{"type":"quick_reply","options":[{"type":"text","title":"Beach/Water place 🌊"},{"type":"text","title":"Mountains ⛰️"},{"type":"text","title":"Monuments 🕌"}],"content":{"type":"text","text":"Tell me 😊","header":"1000 Points Ghumo India"}}},"type":"quick_reply","label":"1000 Points Ghumo India"},{"source_id":4055,"language_id":1,"send_with_title":false,"interactive_content":{"type":"quick_reply","options":[{"type":"text","title":"Traditional 🥻"},{"type":"text","title":"Modern 👗"}],"content":{"type":"text","text":"Tell me","header":"1000 Points Dress"}},"translations":{"1":{"type":"quick_reply","options":[{"type":"text","title":"Traditional 🥻"},{"type":"text","title":"Modern 👗"}],"content":{"type":"text","text":"Tell me","header":"1000 Points Dress"}}},"type":"quick_reply","label":"1000 Points Dress"}],"flows":[{"definition":{"vars":["8fe8a0a0-dfc4-4a66-9a4c-84d0da6feb90"],"uuid":"8fe8a0a0-dfc4-4a66-9a4c-84d0da6feb90","type":"messaging","spec_version":"13.2.0","nodes":[{"uuid":"352db872-ec93-43bf-87ff-6068eb09ae58","exits":[{"uuid":"3cbc099e-215f-4d50-9403-8a33bba80b4f","destination_uuid":"4f3f2d86-ef2f-4ba9-8522-41e525bbd11e"}],"actions":[{"uuid":"5e1d6a6d-7d7f-480c-86c2-356cc272619a","type":"send_msg","text":"I am planning to go on a trip in India - Ghumo India🚂 Help me in going 😍 Where do you think I should go? 🤔\\n\\nBeach/ Water place 🌊\\
+Exporting flow 4559: 1000 You tube Flow 
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 4559) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[],"flows":[{"definition":{"vars":["b4c62c5d-3dd3-4cb6-a204-b9783c29cd50"],"uuid":"b4c62c5d-3dd3-4cb6-a204-b9783c29cd50","type":"messaging","spec_version":"13.2.0","nodes":[{"uuid":"c2fe5a41-63e9-4681-b433-8ffbff2d5a2b","exits":[{"uuid":"b2829590-2f45-4754-9437-37b23ff4b94b","destination_uuid":"a5fe7e1d-7e8f-4ae3-985c-c2332fcb872e"}],"actions":[{"uuid":"bc28894f-0a05-4dca-b431-7eaa8338eb52","type":"send_msg","text":"I know that you love learning new things 😍 I have found these *2 good youtube channels* only for you❤️\\n\\nHappy learning 🤩","quick_replies":[],"labels":[],"attachments":[]}]},{"uuid":"a5fe7e1d-7e8f-4ae3-985c-c2332fcb872e","router":{"type":"switch","operand":"@fields.course","default_category_uuid":"c223dff1-7f63-4d64-8ee9-299dfd23a203","categories":[{"uuid":"d196d7c7-ee36-47ac-841e-c4cf1137bcb1","name":"Arts_p_s","exit_uuid":"4e2dab79-7aff-4291-b895-5e70731c38ef"},{"uuid":"c80e28f0-0d22-4f1d-a2e4-2037fc03ea98","name":"Dance_p_s","exit_uuid":"dad3d6ae-4262-4ffe-bb48-ba98d6168b4a"},{"uuid":"8c1303aa-1ea9-40fa-8c34-065c6f734fc8","name":"Coding_p","exit_uuid":"c8ee9346-06d5-439d-8c44-03a9a14eb5ca"},{"uuid":"10228a75-c8cf-4148-ae7f-3b2033b2ff22","name":"Coding_s","exit_uuid":"0a67f504-4b23-4fd2-805d-9c7d0f6bdc3c"},{"uuid":"af1d6f48-c4b1-4bc4-86ae-0d9e930b1078","name":"Sciencelab_p","exit_uuid":"8ce02202-e93c-4b5d-917d-3b698aaa824f"},{"uuid":"e3ce9321-c071-4c90-ba4c-30e9754fd6d7","name":"Sciencelab_s","exit_uuid":"edfaa77c-fb66-44ff-ba73-c72c8d767750"},{"uuid":"c223dff1-7f63-4d64-8ee9-299dfd23a203","name":"Other","exit_uuid":"a66f5260-da4c-4629-a298-41597fd03668"}],"cases":[{"uuid":"48338bca-79e7-4a76-98e6-f2f5419534ec","type":"has_any_word","category_uuid":"d196d7c7-ee36-47ac-841e-c4cf1137bcb1","arguments":["arts_p_s"]},{"uuid":"69f7ef18-d72a-4759-95fd-9759f5c596a3","type":"has_any_word","category_uuid":"c80e28f0-0d22-4f1d-a2e4-2037fc03ea98","arguments":["dance_p_s"]},{"uuid":"fb6070fe-a210-49
+Exporting flow 15123: 1.0 Career Information 
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...ma4I refresh(mask)=SFMyNT...7kQ0 primary(mask)=SFMyNT...wH6A expiry=2026-06-23T10:18:27.053173Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...ma4I session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        query {\n          exportFlow(id: 15123) {\n            exportData\n          }\n        }\n        ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': None}, 'errors': [{'message': "Flow doesn't exist, Name - User Purpose, UUID - a4fb6ffd-5a2a-4c33-b1b0-de0da28b6540", 'path': ['exportFlow'], 'locations': [{'line': 3, 'column': 11}]}]}
+DEBUG: graphql errors: Flow doesn't exist, Name - User Purpose, UUID - a4fb6ffd-5a2a-4c33-b1b0-de0da28b6540
+Error exporting flow 15123: Terminal Glific Error: 200 - Flow doesn't exist, Name - User Purpose, UUID - a4fb6ffd-5a2a-4c33-b1b0-de0da28b6540
+
+=== MATRIX DATA ===
+{"id": "40067", "name": "Flow 40067", "node_types": ["send_msg"], "interactive": false, "requires_state": false, "requires_context": false}
+{"id": "11273", "name": "---", "node_types": [], "interactive": false, "requires_state": false, "requires_context": false}
+{"id": "6125", "name": "....", "node_types": [], "interactive": false, "requires_state": false, "requires_context": false}
+{"id": "6158", "name": "0987", "node_types": ["send_interactive_msg", "send_msg", "set_contact_field"], "interactive": false, "requires_state": true, "requires_context": false}
+{"id": "4555", "name": "1000 points flow ", "node_types": ["send_interactive_msg", "send_msg", "wait_for_time", "enter_flow"], "interactive": false, "requires_state": false, "requires_context": false}
+{"id": "4558", "name": "1000 puzzle flow ", "node_types": ["send_interactive_msg", "send_msg"], "interactive": false, "requires_state": false, "requires_context": false}
+{"id": "4561", "name": "1000 Trip Flow", "node_types": ["send_interactive_msg", "send_msg"], "interactive": false, "requires_state": false, "requires_context": false}
+{"id": "4559", "name": "1000 You tube Flow ", "node_types": ["send_msg"], "interactive": false, "requires_state": false, "requires_context": false}

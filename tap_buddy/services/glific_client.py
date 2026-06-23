@@ -663,6 +663,24 @@ class GlificClient:
         result = self._graphql_request(query)
         return result.get("waGroups") or []
 
+    def _get_default_wa_managed_phone_id(self):
+        query = """
+        query {
+          waManagedPhones {
+            id
+            phone
+          }
+        }
+        """
+        try:
+            result = self._graphql_request(query)
+            phones = result.get("waManagedPhones", [])
+            if phones:
+                return phones[0].get("id")
+        except Exception as e:
+            print(f"Failed to fetch waManagedPhones: {e}")
+        return None
+
     def send_message_to_group(self, group_id: str, message: str):
         """
         Send a text message directly to a WhatsApp Group.
@@ -677,6 +695,7 @@ class GlificClient:
             }
         }
         """
+        phone_id = self._get_default_wa_managed_phone_id()
         variables = {
             "input": {
                 "waGroupId": str(_coerce_glific_id(group_id)),
@@ -684,6 +703,8 @@ class GlificClient:
                 "type": "TEXT"
             }
         }
+        if phone_id:
+            variables["input"]["waManagedPhoneId"] = phone_id
         print(f"DEBUG: send_message_to_group -> {group_id}")
         result = self._graphql_request(query, variables).get("sendMessageInWaGroup") or {}
         errors = result.get("errors")

@@ -1,0 +1,65 @@
+DEBUG-AUTH [init] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [init] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [init] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+
+=== 1 & 2 & 3. Verifying waGroupId 12125 ===
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    query {\n      waGroup(id: 12125) {\n        waGroup {\n          id\n          label\n          bspId\n          lastCommunicationAt\n          phones {\n            id\n            phone\n          }\n        }\n      }\n    }\n    ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'errors': [{'message': 'Cannot query field "phone" on type "WaGroupPhone".', 'locations': [{'line': 11, 'column': 13}]}]}
+DEBUG: graphql errors: Cannot query field "phone" on type "WaGroupPhone".
+Error fetching waGroup: Terminal Glific Error: 200 - Cannot query field "phone" on type "WaGroupPhone".
+
+=== Fetching Error Logs ===
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    query {\n      errorLogs(opts: {limit: 5}) {\n        id\n        error\n        status\n        stacktrace\n        insertedAt\n      }\n    }\n    ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'errors': [{'message': 'Cannot query field "errorLogs" on type "RootQueryType". Did you mean "webhookLogs"?', 'locations': [{'line': 3, 'column': 7}]}, {'message': 'Unknown argument "opts" on field "errorLogs" of type "RootQueryType".', 'locations': [{'line': 3, 'column': 17}]}]}
+DEBUG: graphql errors: Cannot query field "errorLogs" on type "RootQueryType". Did you mean "webhookLogs"?; Unknown argument "opts" on field "errorLogs" of type "RootQueryType".
+Error fetching errorLogs: Terminal Glific Error: 200 - Cannot query field "errorLogs" on type "RootQueryType". Did you mean "webhookLogs"?; Unknown argument "opts" on field "errorLogs" of type "RootQueryType".
+
+=== 4 & 5. Executing sendMessageInWaGroup ===
+Request:
+mutation sendMessageInWaGroup($input: WaMessageInput!) {
+      sendMessageInWaGroup(input: $input) {
+        errors {
+          key
+          message
+        }
+      }
+    }
+Variables: {
+  "input": {
+    "waGroupId": "12125",
+    "message": "DIRECT GLIFIC TEST",
+    "type": "TEXT"
+  }
+}
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    mutation sendMessageInWaGroup($input: WaMessageInput!) {\n      sendMessageInWaGroup(input: $input) {\n        errors {\n          key\n          message\n        }\n      }\n    }\n    ", "variables": {"input": {"waGroupId": "12125", "message": "DIRECT GLIFIC TEST", "type": "TEXT"}}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'sendMessageInWaGroup': None}, 'errors': [{'message': 'Something unexpected has happened, please reach out to Glific team over discord to get this resolved', 'path': ['sendMessageInWaGroup'], 'locations': [{'line': 3, 'column': 7}]}]}
+DEBUG: graphql errors: Something unexpected has happened, please reach out to Glific team over discord to get this resolved
+
+Exception caught during mutation request: Terminal Glific Error: 200 - Something unexpected has happened, please reach out to Glific team over discord to get this resolved

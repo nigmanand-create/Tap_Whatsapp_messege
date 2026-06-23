@@ -1,0 +1,32 @@
+
+=== Phase 3: Verify Database Mapping ===
+WhatsApp Group: WAG-12125
+glific_group_id: 12125
+Collection Mapping: b1b1jd1i58
+Collection: b1b1jd1i58
+glific_collection_id: 20996
+
+=== Phase 4: Create Fresh Test Campaign ===
+Created & Submitted Campaign: TAP-2026-00315
+
+=== Triggering Dispatch... ===
+DEBUG-AUTH [init] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [init] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [init] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...wiQs refresh(mask)=SFMyNT...QxdM primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:01:38.158081Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...wiQs session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n        mutation startGroupFlow($groupId: ID!, $flowId: ID!, $defaultResults: Json) {\n            startGroupFlow(groupId: $groupId, flowId: $flowId, defaultResults: $defaultResults) {\n                success\n                errors { key message }\n            }\n        }\n        ", "variables": {"groupId": 20996, "flowId": 40067}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'startGroupFlow': {'errors': None, 'success': True}}}
+
+=== Phase 7: Verify Delivery ===
+Recipient: REC-2026-00215 | Status: Sent | Error: None
+  Attempt: DSPA-2026-00059 | Status: Sent | Provider ID: flow_40067 | Error: None
+Campaign Total: 0 | Sent: 0 | Failed: 0
+MARKER_CAMPAIGN=TAP-2026-00315

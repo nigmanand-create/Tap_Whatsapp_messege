@@ -1,0 +1,111 @@
+diff --git a/tap_buddy/services/glific_client.py b/tap_buddy/services/glific_client.py
+index 37cb006..a38de13 100644
+--- a/tap_buddy/services/glific_client.py
++++ b/tap_buddy/services/glific_client.py
+@@ -343,6 +343,8 @@ class GlificClient:
+                 return {"contactByPhone": {"contact": {"id": "mock_contact_123"}}, "contact": {"id": "mock_contact_123"}}
+             if "createContact" in query:
+                 return {"createContact": {"contact": {"id": "mock_contact_123"}}}
++            if "startGroupFlow" in query:
++                return {"startGroupFlow": {"success": True}}
+             if "createSessionTemplate" in query:
+                 return {"createSessionTemplate": {"template": {"id": "mock_tmpl_123", "shortcode": variables.get("input", {}).get("shortcode", "mock"), "status": "PENDING"}}}
+             if "languages(" in query:
+@@ -1360,6 +1362,28 @@ class GlificClient:
+         
+         return result
+ 
++    def start_group_flow(self, group_id, flow_id, default_results=None):
++        mutation = """
++        mutation startGroupFlow($groupId: ID!, $flowId: ID!, $defaultResults: Json) {
++            startGroupFlow(groupId: $groupId, flowId: $flowId, defaultResults: $defaultResults) {
++                success
++                errors { key message }
++            }
++        }
++        """
++        variables = {
++            "groupId": _coerce_glific_id(group_id),
++            "flowId": _coerce_glific_id(flow_id),
++        }
++        if default_results is not None:
++            variables["defaultResults"] = json.dumps(default_results) if isinstance(default_results, dict) else default_results
++
++        result = self._graphql_request(mutation, variables).get("startGroupFlow") or {}
++        errors = result.get("errors")
++        if errors:
++            raise GlificTerminalError(f"Terminal Glific Error: startGroupFlow - {_serialize_graphql_errors(errors)}")
++            
++        return result
+ 
+ 
+ def _extract_contact_id(response):
+diff --git a/tap_buddy/tasks/scheduler.py b/tap_buddy/tasks/scheduler.py
+index 4df61f9..b9e5bc6 100644
+--- a/tap_buddy/tasks/scheduler.py
++++ b/tap_buddy/tasks/scheduler.py
+@@ -323,7 +323,63 @@ def _dispatch_recipient(client, campaign, recipient):
+ 
+ def _dispatch_flow_campaign(client, campaign, recipient):
+     if getattr(recipient, "whatsapp_group", None):
+-        _mark_failed(recipient, "Group flows are currently unsupported.", increment_retry=False, terminal=True)
++        group = frappe.get_doc("WhatsApp Group", recipient.whatsapp_group)
++        flow_id = campaign.glific_flow
++        
++        if not flow_id:
++            _mark_failed(recipient, "Campaign missing Glific Flow ID", increment_retry=False, terminal=True)
++            return
++            
++        # 1. Resolve Glific Collection ID via Mapping
++        mappings = frappe.get_all(
++            "WhatsApp Group Collection Mapping",
++            filters={"whatsapp_group": group.name},
++            fields=["collection", "collection.glific_collection_id"]
++        )
++        
++        if not mappings:
++            _mark_failed(recipient, f"Missing Mapping: WhatsApp Group {group.name} is not mapped to any Collection", increment_retry=False, terminal=True)
++            return
++            
++        glific_collection_id = mappings[0].get("glific_collection_id")
++        if not glific_collection_id:
++            _mark_failed(recipient, f"Invalid Collection ID: Mapped collection {mappings[0].get('collection')} has no Glific ID", increment_retry=False, terminal=True)
++            return
++            
++        # 2. Remote Validation (Optional lightweight cache-check or let Glific error handle Missing Collection)
++        # Glific 200 "No valid groups found" acts as our "Missing Collection" remote validation.
++            
++        idempotency_key = f"tap_{campaign.name}_{recipient.name}_flow"
++        frappe.db.set_value("Campaign Recipient", recipient.name, "idempotency_key", idempotency_key)
++        
++        message_placeholder = f"Group Flow Execution: {flow_id} on Collection: {glific_collection_id}"
++        attempt_name = _create_dispatch_attempt(campaign, recipient, None, message_placeholder, idempotency_key, whatsapp_group=recipient.whatsapp_group)
++        
++        sent_at = now_datetime()
++        try:
++            # Important: pass glific_collection_id (the Contact Group ID), not glific_group_id
++            response = client.start_group_flow(glific_collection_id, flow_id)
++            
++            frappe.logger("tap_buddy_dispatch").info(
++                f"[DISPATCH] Recipient {recipient.name} started Group Flow flow_id={flow_id} collection_id={glific_collection_id} (via wag={group.name})"
++            )
++            
++            _update_dispatch_attempt_success(attempt_name, response, f"flow_{flow_id}")
++            frappe.db.set_value(
++                "Campaign Recipient",
++                recipient.name,
++                {"status": REC_STATUS_SENT, "sent_time": sent_at, "failure_reason": None},
++            )
++            
++        except GlificTerminalError as exc:
++            frappe.logger("tap_buddy_dispatch").error(f"[DISPATCH] Terminal flow error for {recipient.name} collection={glific_collection_id}: {exc}")
++            _update_dispatch_attempt_failure(attempt_name, str(exc))
++            _mark_failed(recipient, str(exc), increment_retry=False, terminal=True)
++            
++        except Exception as exc:
++            frappe.logger("tap_buddy_dispatch").exception(f"[DISPATCH] Transient flow error for {recipient.name} collection={glific_collection_id}")
++            _update_dispatch_attempt_failure(attempt_name, str(exc))
++            _mark_failed(recipient, str(exc), increment_retry=True, terminal=False)
+         return
+ 
+     school = frappe.get_doc("School", recipient.school) if recipient.school else None

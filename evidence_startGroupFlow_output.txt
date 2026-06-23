@@ -1,0 +1,84 @@
+DEBUG-AUTH [init] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [init] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [init] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+========================================
+EVIDENCE 1: Group vs Collection Behavior
+========================================
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    query {\n      group(id: 20996) {\n        group {\n          id\n          label\n          contactsCount\n          waGroupsCount\n          contacts { id name }\n          waGroups { id label }\n        }\n      }\n    }\n    ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'group': {'group': {'contacts': [], 'contactsCount': 0, 'id': '20996', 'label': 'TAP_Testing', 'waGroups': [{'id': '12124', 'label': 'Test'}, {'id': '12125', 'label': 'Testing Group'}], 'waGroupsCount': 2}}}}
+{}
+
+========================================
+EVIDENCE 2: Flow Definition
+========================================
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    query {\n      exportFlow(id: 40067) {\n        exportData\n      }\n    }\n    ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'exportFlow': {'exportData': '{"interactive_templates":[],"flows":[{"definition":{"vars":["1f8189dd-122c-4b36-9e37-73a8568c8f59"],"uuid":"1f8189dd-122c-4b36-9e37-73a8568c8f59","type":"messaging","spec_version":"14.3.0","nodes":[{"uuid":"59990feb-8e23-4b64-bd33-b5f8266b1ff9","exits":[{"uuid":"468dd31c-1191-47e1-9cd9-d7d438224cb3","destination_uuid":null}],"actions":[{"uuid":"bc232819-9ecc-4735-a6be-8886abb34a7b","type":"send_msg","text":"Warm Greetings! 🙏🏻\\n\\nA heartfelt welcome to all Principals and Teachers to The Apprentice Project WhatsApp group.\\n\\nTAP Buddy is an AI-powered WhatsApp chatbot, implemented jointly by the Directorate of Secondary Education, Uttar Pradesh and The Apprentice Project (TAP). The program aims to equip students of Classes 9 to 12 with essential 21st-century life skills.\\n\\nThrough this chatbot, students will receive guidance in two key areas:\\n\\n🔹 Coding - To develop computational thinking, problem-solving, and digital skills.\\n🔹 Financial Literacy - To build an understanding of money management, budgeting, saving, and investing.\\n\\n📱 Students will be able to interact directly with the TAP Buddy Bot on WhatsApp, enabling them to learn independently and engage in a personalized digital learning journey.\\n\\nYour support and guidance as Principals and Teachers are vital to the successful implementation of this program at the school level. We look forward to working together to empower students with future-ready skills.\\n\\nThank you.\\nThe Apprentice Project (TAP)","quick_replies":[],"labels":[],"attachments":[]}]}],"name":"GroupWelcome_WAGroups","localization":{"pa":{"bc232819-9ecc-4735-a6be-8886abb34a7b":{"text":["ਸਤਿਕਾਰ ਸਹਿਤ ਨਮਸਕਾਰ! 🙏🏻\\n\\nਦ ਅਪ੍ਰੈਂਟਿਸ ਪ੍ਰੋਜੈਕਟ ਦੇ ਵਟਸਐਪ ਗਰੁੱਪ ਵਿੱਚ ਸਾਰੇ ਪ੍ਰਿੰਸੀਪਲਾਂ ਅਤੇ ਅਧਿਆਪਕਾਂ ਦਾ ਦਿਲੋਂ ਸਵਾਗਤ ਹੈ।\\n\\nTAP Buddy ਇੱਕ AI-ਸੰਚਾਲਿਤ ਵਟਸਐਪ ਚੈਟਬਾਟ ਹੈ, ਜਿਸਨੂੰ ਉੱਤਰ ਪ੍ਰਦੇਸ਼ ਡਾਇਰੈਕਟੋਰੇਟ ਆਫ ਸੈਕੰਡਰੀ ਐਜੂਕੇਸ਼ਨ ਅਤੇ ਦ ਅਪ੍ਰੈਂਟਿਸ ਪ੍ਰੋਜੈਕਟ (TAP) ਵੱਲੋਂ ਸਾਂਝੇ ਤੌਰ \'ਤੇ ਲਾਗੂ ਕੀਤਾ ਗਿਆ ਹੈ। ਇਸ ਪ੍ਰੋਗਰਾਮ ਦਾ ਉਦੇਸ
+Export Data: {}
+
+========================================
+EVIDENCE 3: FlowRun Creation
+========================================
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    query {\n      flowRuns(filter: { flowId: 40067 }) {\n        id\n        contact { id name }\n        status\n        insertedAt\n        updatedAt\n      }\n    }\n    ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'errors': [{'message': 'Cannot query field "flowRuns" on type "RootQueryType". Did you mean "flow", "flowGet", "flowLabel", "flowLabels", or "flowRelease"?', 'locations': [{'line': 3, 'column': 7}]}, {'message': 'Unknown argument "filter" on field "flowRuns" of type "RootQueryType".', 'locations': [{'line': 3, 'column': 16}]}]}
+DEBUG: graphql errors: Cannot query field "flowRuns" on type "RootQueryType". Did you mean "flow", "flowGet", "flowLabel", "flowLabels", or "flowRelease"?; Unknown argument "filter" on field "flowRuns" of type "RootQueryType".
+Error fetching flow runs: Terminal Glific Error: 200 - Cannot query field "flowRuns" on type "RootQueryType". Did you mean "flow", "flowGet", "flowLabel", "flowLabels", or "flowRelease"?; Unknown argument "filter" on field "flowRuns" of type "RootQueryType".
+
+========================================
+EVIDENCE 4: Node Execution Logs
+========================================
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    query {\n      messages(filter: { flowId: 40067 }, opts: { limit: 5 }) {\n        id\n        body\n        flowId\n        insertedAt\n      }\n    }\n    ", "variables": {}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'errors': [{'message': 'Cannot query field "flowId" on type "Message". Did you mean "flow", "flowLabel", or "groupId"?', 'locations': [{'line': 6, 'column': 9}]}]}
+DEBUG: graphql errors: Cannot query field "flowId" on type "Message". Did you mean "flow", "flowLabel", or "groupId"?
+Error fetching messages: Terminal Glific Error: 200 - Cannot query field "flowId" on type "Message". Did you mean "flow", "flowLabel", or "groupId"?
+
+========================================
+EVIDENCE 5: Test startGroupFlow
+========================================
+DEBUG-AUTH [ensure_valid_token-enter] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [ensure_valid_token-enter] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [ensure_valid_token-enter] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: ensure_valid_token - token is valid; refresh not required
+DEBUG-AUTH [graphql-before] base_url=https://api.tap.glific.com/api/v1 graphql_url=https://api.tap.glific.com/api rest_base=https://api.tap.glific.com/api/v1
+DEBUG-AUTH [graphql-before] token(mask)=SFMyNT...7-yw refresh(mask)=SFMyNT...gtKg primary(mask)=SFMyNT...wH6A expiry=2026-06-23T09:42:58.604013Z
+DEBUG-AUTH [graphql-before] headers.Authorization(mask)=SFMyNT...7-yw session_cookies_present=False
+DEBUG: graphql_url= https://api.tap.glific.com/api
+DEBUG: graphql payload= {"query": "\n    mutation startGroupFlow($groupId: ID!, $flowId: ID!) {\n      startGroupFlow(groupId: $groupId, flowId: $flowId) {\n        success\n        errors { key message }\n      }\n    }\n    ", "variables": {"groupId": "20996", "flowId": "40067"}}
+DEBUG: graphql initial response status=200
+DEBUG: graphql response body (truncated): {'data': {'startGroupFlow': {'errors': None, 'success': True}}}
+Response: {}
