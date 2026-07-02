@@ -1,0 +1,238 @@
+{
+ "app": "tap_buddy",
+ "charts": [],
+ "creation": "2026-06-23 12:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "message-square",
+ "idx": 1,
+ "is_hidden": 0,
+ "label": "TAP Buddy",
+ "links": [
+  {
+   "description": "Monitor outreach and campaign performance",
+   "hidden": 0,
+   "label": "Campaigns & Delivery",
+   "link_count": 4,
+   "link_type": "DocType",
+   "type": "Card Break"
+  },
+  {
+   "label": "TAP Campaign",
+   "link_to": "TAP Campaign",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "Campaign Recipient",
+   "link_to": "Campaign Recipient",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "Dispatch Attempt",
+   "link_to": "Dispatch Attempt",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "Message Log",
+   "link_to": "Message Log",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "description": "Manage WhatsApp groups, schools, and students",
+   "hidden": 0,
+   "label": "Audience & Content",
+   "link_count": 8,
+   "link_type": "DocType",
+   "type": "Card Break"
+  },
+  {
+   "label": "WhatsApp Group Collection",
+   "link_to": "whatsapp-group-brows",
+   "link_type": "Page",
+   "type": "Link"
+  },
+  {
+   "label": "Glific Contact Group Mapping",
+   "link_to": "Glific Contact Group Mapping",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "School",
+   "link_to": "School",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "School Group",
+   "link_to": "School Group",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "LMS Student",
+   "link_to": "LMS Student",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "LMS Batch",
+   "link_to": "LMS Batch",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "Glific Flow",
+   "link_to": "Glific Flow",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "WhatsApp Template",
+   "link_to": "WhatsApp Template",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "description": "System monitoring and troubleshooting",
+   "hidden": 0,
+   "label": "Monitoring & Operations",
+   "link_count": 7,
+   "link_type": "DocType",
+   "type": "Card Break"
+  },
+  {
+   "label": "Webhook Event",
+   "link_to": "Webhook Event",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "Scheduled Job Type",
+   "link_to": "Scheduled Job Type",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "Background Jobs",
+   "link_to": "RQ Job",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "Error Log",
+   "link_to": "Error Log",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "LMS Trigger Log",
+   "link_to": "LMS Trigger Log",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "LMS Reminder Log",
+   "link_to": "LMS Reminder Log",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "description": "App settings and integrations",
+   "hidden": 0,
+   "label": "Configuration",
+   "link_count": 4,
+   "link_type": "DocType",
+   "type": "Card Break"
+  },
+  {
+   "label": "TAP Buddy Settings",
+   "link_to": "TAP Buddy Settings",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "LMS Integration Settings",
+   "link_to": "LMS Integration Settings",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "Glific Sync Settings",
+   "link_to": "Glific Sync Settings",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "label": "TAP BigQuery Settings",
+   "link_to": "TAP BigQuery Settings",
+   "link_type": "DocType",
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-06-24 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "TAP Buddy",
+ "number_cards": [],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
+ "sequence_id": 0.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "TAP Campaign",
+   "link_to": "TAP Campaign",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "label": "WhatsApp Group Collection",
+   "link_to": "whatsapp-group-brows",
+   "type": "Page"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "TAP Buddy Settings",
+   "link_to": "TAP Buddy Settings",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Active Campaigns",
+   "link_to": "TAP Campaign",
+   "type": "DocType",
+   "stats_filter": "[[\"status\",\"=\",\"Running\"]]"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Pending Recipients",
+   "link_to": "Campaign Recipient",
+   "type": "DocType",
+   "stats_filter": "[[\"status\",\"in\",[\"Pending\",\"Queued\"]]]"
+  },
+  {
+   "color": "Red",
+   "doc_view": "List",
+   "label": "Failed Recipients",
+   "link_to": "Campaign Recipient",
+   "type": "DocType",
+   "stats_filter": "[[\"status\",\"=\",\"Failed\"]]"
+  }
+ ],
+ "title": "TAP Buddy",
+ "type": "Workspace",
+ "content": "[{\"id\": \"head_actions\", \"type\": \"header\", \"data\": {\"text\": \"Quick Actions\", \"level\": 4, \"col\": 12}}, {\"id\": \"short_TAPCampaign\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"TAP Campaign\", \"col\": 4}}, {\"id\": \"short_WhatsAppGroupCollection\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"WhatsApp Group Collection\", \"col\": 4}}, {\"id\": \"short_TAPBuddySettings\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"TAP Buddy Settings\", \"col\": 4}}, {\"id\": \"spacer1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"head_dash\", \"type\": \"header\", \"data\": {\"text\": \"Dashboard\", \"level\": 4, \"col\": 12}}, {\"id\": \"short_ActiveCampaigns\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Active Campaigns\", \"col\": 4}}, {\"id\": \"short_PendingRecipients\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Pending Recipients\", \"col\": 4}}, {\"id\": \"short_FailedRecipients\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Failed Recipients\", \"col\": 4}}, {\"id\": \"spacer2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"card_CampaignsDelivery\", \"type\": \"card\", \"data\": {\"card_name\": \"Campaigns & Delivery\", \"col\": 4}}, {\"id\": \"card_AudienceContent\", \"type\": \"card\", \"data\": {\"card_name\": \"Audience & Content\", \"col\": 4}}, {\"id\": \"card_MonitoringOperations\", \"type\": \"card\", \"data\": {\"card_name\": \"Monitoring & Operations\", \"col\": 4}}, {\"id\": \"card_Configuration\", \"type\": \"card\", \"data\": {\"card_name\": \"Configuration\", \"col\": 4}}]"
+}

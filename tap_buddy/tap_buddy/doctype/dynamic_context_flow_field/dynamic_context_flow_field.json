@@ -1,0 +1,66 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-26 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "field_name",
+  "field_source",
+  "is_required",
+  "default_value",
+  "validation_regex"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "field_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Field Name",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "default": "Payload",
+   "fieldname": "field_source",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Field Source",
+   "options": "Payload\nManual Default\nBigQuery",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "is_required",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Required"
+  },
+  {
+   "columns": 2,
+   "fieldname": "default_value",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Default Value"
+  },
+  {
+   "fieldname": "validation_regex",
+   "fieldtype": "Data",
+   "label": "Validation Regex"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-26 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "Dynamic Context Flow Field",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

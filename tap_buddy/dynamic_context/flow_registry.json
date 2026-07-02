@@ -1,0 +1,112 @@
+{
+  "flows": [
+    {
+      "flow_id": "builtin_priority",
+      "flow_name": "Priority Flows",
+      "category": "priority",
+      "bq_routine": null,
+      "cache_ttl": 300,
+      "bypass_cache": false,
+      "fields": [
+        {"name": "pi_team_member_name", "source": "default", "default_value": "Team Member"},
+        {"name": "role", "source": "default", "default_value": "Coordinator"},
+        {"name": "zone", "source": "payload", "default_value": "Zone A"},
+        {"name": "district", "source": "payload", "default_value": "District A"}
+      ]
+    },
+    {
+      "flow_id": "builtin_onboarding",
+      "flow_name": "Onboarding & Setup",
+      "category": "onboarding",
+      "bq_routine": "get_onboarding_context_v1",
+      "cache_ttl": 300,
+      "bypass_cache": false,
+      "fields": [
+        {"name": "total_registrations", "source": "bigquery"},
+        {"name": "school_registrations", "source": "bigquery"},
+        {"name": "school_names", "source": "bigquery"},
+        {"name": "registration_deadline", "source": "default", "default_value": "2026-07-31"},
+        {"name": "registration_link", "source": "default", "default_value": "https://tap.example.com/register"},
+        {"name": "excel_template", "source": "default", "default_value": "https://tap.example.com/template.xlsx"}
+      ]
+    },
+    {
+      "flow_id": "builtin_program_announcements",
+      "flow_name": "Program Announcements",
+      "category": "program_announcements",
+      "bq_routine": "get_announcements_context_v1",
+      "cache_ttl": 300,
+      "bypass_cache": false,
+      "fields": [
+        {"name": "week_number", "source": "bigquery"},
+        {"name": "grade_wise_youtube_links", "source": "bigquery"},
+        {"name": "event_date", "source": "default", "default_value": "2026-07-15"},
+        {"name": "event_time", "source": "default", "default_value": "10:00 AM"},
+        {"name": "venue", "source": "default", "default_value": "Online Zoom"},
+        {"name": "meeting_link", "source": "default", "default_value": "https://zoom.us/j/123456"},
+        {"name": "meeting_id", "source": "default", "default_value": "123456"},
+        {"name": "passcode", "source": "default", "default_value": "tap123"},
+        {"name": "activity_name", "source": "default", "default_value": "Orientation"},
+        {"name": "deadlines", "source": "default", "default_value": "2026-07-14"}
+      ]
+    },
+    {
+      "flow_id": "builtin_engagement",
+      "flow_name": "Engagement & Nudges",
+      "category": "engagement",
+      "bq_routine": "get_engagement_context_v1",
+      "cache_ttl": 300,
+      "bypass_cache": false,
+      "fields": [
+        {"name": "registration_count", "source": "bigquery"},
+        {"name": "access_rate", "source": "bigquery"},
+        {"name": "submission_rate", "source": "bigquery"},
+        {"name": "dropout_count", "source": "bigquery"},
+        {"name": "week_number", "source": "bigquery"},
+        {"name": "zone", "source": "payload", "default_value": "General Zone"},
+        {"name": "reporting_period", "source": "default", "default_value": "Q2"}
+      ]
+    },
+    {
+      "flow_id": "builtin_feedback",
+      "flow_name": "Feedback & Reporting",
+      "category": "feedback",
+      "bq_routine": "get_feedback_context_v1",
+      "cache_ttl": 300,
+      "bypass_cache": false,
+      "fields": [
+        {"name": "access_rate", "source": "bigquery"},
+        {"name": "submission_rate", "source": "bigquery"},
+        {"name": "school_metrics", "source": "bigquery"},
+        {"name": "program_metrics", "source": "bigquery"},
+        {"name": "week_number", "source": "bigquery"},
+        {"name": "survey_link", "source": "default", "default_value": "https://forms.example.com/survey"},
+        {"name": "review_period", "source": "default", "default_value": "June 2026"},
+        {"name": "poll_question", "source": "default", "default_value": "How satisfied are you?"},
+        {"name": "poll_options", "source": "default", "default_value": "Good, Average, Poor"},
+        {"name": "progress_image", "source": "default", "default_value": "https://tap.example.com/progress.png"}
+      ]
+    },
+    {
+      "flow_id": "builtin_celebratory",
+      "flow_name": "Celebratory / Motivational",
+      "category": "celebratory",
+      "bq_routine": "get_celebratory_context_v1",
+      "cache_ttl": 300,
+      "bypass_cache": false,
+      "fields": [
+        {"name": "top_school", "source": "bigquery"},
+        {"name": "leaderboard", "source": "bigquery"},
+        {"name": "registration_count", "source": "bigquery"},
+        {"name": "submission_count", "source": "bigquery"},
+        {"name": "achievement_metrics", "source": "bigquery"},
+        {"name": "milestone", "source": "default", "default_value": "1000 Submissions"},
+        {"name": "festival", "source": "default", "default_value": "Annual Celebration"},
+        {"name": "student_name", "source": "payload", "default_value": "Student"},
+        {"name": "teacher_name", "source": "payload", "default_value": "Teacher"},
+        {"name": "award_month", "source": "default", "default_value": "June"},
+        {"name": "uploaded_image", "source": "default", "default_value": "https://tap.example.com/award.png"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-06-26 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "request_id",
+  "flow_id",
+  "category",
+  "status",
+  "cache_status",
+  "execution_time_ms",
+  "routine_executed",
+  "error_message"
+ ],
+ "fields": [
+  {
+   "fieldname": "request_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Correlation Request ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "flow_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Flow ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Flow Category",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Execution Status",
+   "options": "Success\nFailure",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cache_status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Cache Status (HIT/MISS/BYPASS)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "execution_time_ms",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Execution Duration (ms)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "routine_executed",
+   "fieldtype": "Data",
+   "label": "BigQuery TVF Routine Executed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Error Message / Failure Rationale",
+   "read_only": 1
+  }
+ ],
+ "istable": 0,
+ "links": [],
+ "modified": "2026-06-26 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "Dynamic Context Audit Log",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 0
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "request_id"
+}
