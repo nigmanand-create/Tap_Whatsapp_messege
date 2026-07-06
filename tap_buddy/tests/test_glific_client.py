@@ -206,6 +206,50 @@ class TestGlificClientMessageQueries:
         assert client.session.post.call_count == 2
         assert client.session.post.call_args_list[1][1]["headers"]["Authorization"] == "primary-token"
 
+    def test_start_group_flow_calls_mutation(self, monkeypatch):
+        settings = _make_settings()
+        monkeypatch.setattr("frappe.get_single", lambda name: settings)
+        monkeypatch.setattr("frappe.throw", lambda msg: (_ for _ in ()).throw(Exception(msg)))
+        monkeypatch.setattr("tap_buddy.services.glific_client.frappe.cache", lambda: MagicMock(get_value=lambda k: None))
+        monkeypatch.setattr(
+            "tap_buddy.services.glific_client.acquire_lock", lambda *a, **kw: False
+        )
+
+        from tap_buddy.services.glific_client import GlificClient
+
+        client = GlificClient()
+        client._graphql_request = MagicMock(return_value={
+            "startGroupFlow": {"success": True, "errors": None}
+        })
+
+        result = client.start_group_flow("777", "40067", default_results={"key": "value"})
+        assert result == {"success": True, "errors": None}
+        assert client._graphql_request.call_count == 1
+        args, _ = client._graphql_request.call_args
+        assert "mutation startGroupFlow" in args[0]
+        assert args[1]["groupId"] == 777
+        assert args[1]["flowId"] == 40067
+        assert args[1]["defaultResults"] == '{"key": "value"}'
+
+    def test_start_group_flow_raises_terminal_error_on_graphql_error(self, monkeypatch):
+        settings = _make_settings()
+        monkeypatch.setattr("frappe.get_single", lambda name: settings)
+        monkeypatch.setattr("frappe.throw", lambda msg: (_ for _ in ()).throw(Exception(msg)))
+        monkeypatch.setattr("tap_buddy.services.glific_client.frappe.cache", lambda: MagicMock(get_value=lambda k: None))
+        monkeypatch.setattr(
+            "tap_buddy.services.glific_client.acquire_lock", lambda *a, **kw: False
+        )
+
+        from tap_buddy.services.glific_client import GlificClient, GlificTerminalError
+
+        client = GlificClient()
+        client._graphql_request = MagicMock(return_value={
+            "startGroupFlow": {"success": False, "errors": [{"key": "flow", "message": "Flow not found"}]}
+        })
+
+        with pytest.raises(GlificTerminalError, match="Flow not found"):
+            client.start_group_flow("777", "40067")
+
 
 
 # ---------------------------------------------------------------------------

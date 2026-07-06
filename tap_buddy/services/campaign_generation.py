@@ -112,6 +112,10 @@ class CampaignGenerationService:
                         "contact_field": getattr(vm, "contact_field", None),
                     })
 
+            # Copy flow custom parameters if present
+            if hasattr(template_doc, "flow_custom_parameters") and getattr(template_doc, "flow_custom_parameters", None):
+                new_campaign.flow_custom_parameters = template_doc.flow_custom_parameters
+
             new_campaign.insert(ignore_permissions=True)
 
             # Requirement 4: Store the relationship in Generated Campaign History

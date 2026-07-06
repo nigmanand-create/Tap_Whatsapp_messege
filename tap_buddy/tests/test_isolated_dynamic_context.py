@@ -1,4 +1,5 @@
 import json
+import os
 from unittest.mock import MagicMock, patch
 import pytest
 import frappe
@@ -15,7 +16,8 @@ from tap_buddy.dynamic_context.exceptions import ValidationError, ConfigurationE
 
 @pytest.fixture(autouse=True)
 def setup_frappe_local():
-    frappe.init(site="tapbuddy.local", sites_path=".")
+    sites_path = "sites" if os.path.exists("sites/tapbuddy.local") else "."
+    frappe.init(site="tapbuddy.local", sites_path=sites_path)
     frappe.local.flags = frappe._dict()
     frappe.local.response = frappe._dict()
     with patch("frappe.get_all", side_effect=Exception("Mock DB lookup failed")), \
@@ -59,11 +61,30 @@ class TestConfigProvider:
             assert cfg.category == cat
             assert len(cfg.fields) > 0
 
+    def test_master_flow_ids_resolution(self):
+        prv = JsonFileConfigProvider()
+        reg = FlowRegistry(config_provider=prv)
+        master_flows = [
+            ("builtin_priority", "priority"),
+            ("builtin_onboarding", "onboarding"),
+            ("builtin_program_announcements", "program_announcements"),
+            ("builtin_engagement", "engagement"),
+            ("builtin_feedback", "feedback"),
+            ("builtin_celebratory", "celebratory"),
+        ]
+        for flow_id, expected_cat in master_flows:
+            cfg = reg.get_flow_config(flow_id=flow_id)
+            assert cfg is not None, f"Flow ID '{flow_id}' failed to resolve in FlowRegistry"
+            assert cfg.flow_id == flow_id
+            assert cfg.category == expected_cat
+            assert cfg.cache_ttl == 300
+            assert cfg.bypass_cache is False
+
 
 class TestDataProviders:
     @patch("tap_buddy.services.bigquery_executor.execute_tvf")
     def test_bigquery_provider_batching(self, mock_execute_tvf):
-        mock_execute_tvf.return_value = [{"total_registrations": 100, "school_registrations": 50, "school_names": "ABC"}]
+        mock_execute_tvf.return_value = [{"total_registrations": 100, "school_registrations": 50, "school_name": "ABC"}]
         
         prv = JsonFileConfigProvider()
         reg = FlowRegistry(config_provider=prv)

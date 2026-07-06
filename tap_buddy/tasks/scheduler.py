@@ -358,7 +358,29 @@ def _dispatch_flow_campaign(client, campaign, recipient):
         _mark_failed(recipient, "Missing WhatsApp number", increment_retry=False, terminal=True)
         return
 
+    custom_params = {}
+    raw_params = getattr(campaign, "flow_custom_parameters", None)
+    if raw_params:
+        try:
+            from tap_buddy.utils.validation import validate_flow_custom_parameters
+            validate_flow_custom_parameters(raw_params)
+            if isinstance(raw_params, str) and raw_params.strip():
+                import json
+                custom_params = json.loads(raw_params)
+            elif isinstance(raw_params, dict):
+                custom_params = raw_params
+        except Exception as exc:
+            frappe.logger("tap_buddy_dispatch").error(
+                f"[DISPATCH] Invalid flow_custom_parameters for campaign {campaign.name}: {exc}"
+            )
+            _mark_failed(recipient, f"Invalid flow_custom_parameters: {exc}", increment_retry=False, terminal=True)
+            return
+
     context = get_recipient_context(school.name if school else None)
+    if not isinstance(context, dict):
+        context = {}
+    if custom_params:
+        context.update(custom_params)
     
     idempotency_key = f"tap_{campaign.name}_{recipient.name}_flow"
     frappe.db.set_value("Campaign Recipient", recipient.name, "idempotency_key", idempotency_key)

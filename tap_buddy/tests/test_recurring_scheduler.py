@@ -13,23 +13,34 @@ import sys
 import pytz
 
 # Set up dummy get_datetime and now_datetime helpers
-def dummy_get_datetime(val):
-    if isinstance(val, datetime):
-        return val
-    return datetime.strptime(str(val), "%Y-%m-%d %H:%M:%S")
+try:
+    import frappe
+    import frappe.utils
+except ImportError:
+    pass
 
-utils_mock = MagicMock()
-utils_mock.get_datetime = dummy_get_datetime
-utils_mock.now_datetime = lambda: datetime(2026, 7, 3, 10, 0, 0)
-
-if "frappe" in sys.modules:
+if "frappe" in sys.modules and not isinstance(sys.modules["frappe"], MagicMock):
     mock_frappe = sys.modules["frappe"]
 else:
     mock_frappe = MagicMock()
     sys.modules["frappe"] = mock_frappe
 
+if "frappe.utils" in sys.modules and not isinstance(sys.modules["frappe.utils"], MagicMock):
+    utils_mock = sys.modules["frappe.utils"]
+else:
+    import types
+    utils_mock = types.ModuleType("frappe.utils")
+    utils_mock.__path__ = []
+    sys.modules["frappe.utils"] = utils_mock
+
+def dummy_get_datetime(val):
+    if isinstance(val, datetime):
+        return val
+    return datetime.strptime(str(val), "%Y-%m-%d %H:%M:%S")
+
+utils_mock.get_datetime = dummy_get_datetime
+utils_mock.now_datetime = lambda: datetime(2026, 7, 3, 10, 0, 0)
 mock_frappe.utils = utils_mock
-sys.modules["frappe.utils"] = utils_mock
 
 from tap_buddy.tasks.recurring import (
     calculate_next_execution,

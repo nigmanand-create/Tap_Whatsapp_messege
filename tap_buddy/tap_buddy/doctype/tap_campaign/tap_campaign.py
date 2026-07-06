@@ -2,6 +2,7 @@ import frappe
 from frappe.model.document import Document
 
 from tap_buddy.utils.constants import STATUS_QUEUED
+from tap_buddy.utils.validation import validate_flow_custom_parameters
 from typing import TYPE_CHECKING
 
 class TAPCampaign(Document):
@@ -37,6 +38,8 @@ class TAPCampaign(Document):
         elif campaign_type == "Flow":
             if not getattr(self, "glific_flow", None):
                 frappe.throw("Glific Flow is required")
+
+        validate_flow_custom_parameters(getattr(self, "flow_custom_parameters", None))
 
         # Check Send Date
         if not getattr(self, "send_date", None):

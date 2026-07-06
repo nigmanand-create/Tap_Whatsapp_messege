@@ -27,6 +27,7 @@
   "target_group",
   "target_collection",
   "variable_mappings",
+  "flow_custom_parameters",
   "history_section",
   "generated_campaigns"
  ],
@@ -183,6 +184,13 @@
    "fieldtype": "Table",
    "label": "Variable Mappings",
    "options": "Template Variable Mapping"
+  },
+  {
+   "depends_on": "eval:doc.campaign_type == 'Flow'",
+   "fieldname": "flow_custom_parameters",
+   "fieldtype": "Code",
+   "label": "Flow Custom Parameters (JSON)",
+   "options": "JSON"
   },
   {
    "fieldname": "history_section",

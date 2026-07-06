@@ -12,24 +12,38 @@ from datetime import datetime
 import sys
 
 # Set up clean mocks for frappe environment
-if "frappe" in sys.modules:
+try:
+    import frappe
+    import frappe.utils
+except ImportError:
+    pass
+
+if "frappe" in sys.modules and not isinstance(sys.modules["frappe"], MagicMock):
     mock_frappe = sys.modules["frappe"]
 else:
     mock_frappe = MagicMock()
     sys.modules["frappe"] = mock_frappe
+
+if "frappe.utils" in sys.modules and not isinstance(sys.modules["frappe.utils"], MagicMock):
+    utils_mock = sys.modules["frappe.utils"]
+else:
+    import types
+    utils_mock = types.ModuleType("frappe.utils")
+    utils_mock.__path__ = []
+    sys.modules["frappe.utils"] = utils_mock
 
 def dummy_get_datetime(val):
     if isinstance(val, datetime):
         return val
     return datetime.strptime(str(val), "%Y-%m-%d %H:%M:%S")
 
-utils_mock = MagicMock()
 utils_mock.get_datetime = dummy_get_datetime
 utils_mock.now_datetime = lambda: datetime(2026, 7, 3, 10, 0, 0)
 mock_frappe.utils = utils_mock
 
-sys.modules["frappe"] = mock_frappe
-sys.modules["frappe.utils"] = utils_mock
+for attr in ("db", "get_doc", "new_doc", "throw", "logger", "get_all"):
+    if not hasattr(mock_frappe, attr) or not isinstance(getattr(mock_frappe, attr), MagicMock):
+        setattr(mock_frappe, attr, MagicMock())
 
 from tap_buddy.services.campaign_generation import CampaignGenerationService
 
@@ -45,9 +59,9 @@ class DummyTemplateDoc:
         self.targeting_type = kwargs.get("targeting_type", "Single School")
         self.school_name = kwargs.get("school_name", "SCH-001")
         self.school_group = kwargs.get("school_group", None)
-        self.target_group = kwargs.get("target_group", None)
         self.target_collection = kwargs.get("target_collection", None)
         self.variable_mappings = kwargs.get("variable_mappings", [])
+        self.flow_custom_parameters = kwargs.get("flow_custom_parameters", None)
 
 
 class DummyNewDoc:
@@ -65,10 +79,40 @@ class DummyNewDoc:
         return self
 
 
+class DummyCampaignDoc:
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name", "CMP-2026-00001")
+        self.naming_pattern = kwargs.get("naming_pattern")
+        self.campaign_name = kwargs.get("campaign_name")
+        self.campaign_type = kwargs.get("campaign_type")
+        self.template = kwargs.get("template")
+        self.glific_flow = kwargs.get("glific_flow")
+        self.targeting_type = kwargs.get("targeting_type")
+        self.school_name = kwargs.get("school_name")
+        self.school_group = kwargs.get("school_group")
+        self.target_collection = kwargs.get("target_collection")
+        self.status = kwargs.get("status", "Draft")
+        self.scheduled_time = kwargs.get("scheduled_time")
+        self.flow_custom_parameters = kwargs.get("flow_custom_parameters", None)
+        self.recurring_campaign_template = kwargs.get("recurring_campaign_template")
+        self.__dict__.update(kwargs)
+
+    def insert(self, ignore_permissions=False):
+        return self
+
+
 class TestCampaignGenerationService(unittest.TestCase):
     def setUp(self):
-        mock_frappe.reset_mock()
+        if hasattr(mock_frappe, "reset_mock"):
+            mock_frappe.reset_mock()
+        else:
+            for attr in ("db", "get_doc", "new_doc", "throw", "logger", "get_all"):
+                if hasattr(mock_frappe, attr) and hasattr(getattr(mock_frappe, attr), "reset_mock"):
+                    getattr(mock_frappe, attr).reset_mock()
         mock_frappe.utils = utils_mock
+        for attr in ("db", "get_doc", "new_doc", "throw", "logger", "get_all"):
+            if not hasattr(mock_frappe, attr) or not isinstance(getattr(mock_frappe, attr), MagicMock):
+                setattr(mock_frappe, attr, MagicMock())
         mock_frappe.db.exists.side_effect = None
         mock_frappe.db.exists.return_value = False
         mock_frappe.new_doc.side_effect = None
@@ -229,6 +273,29 @@ class TestCampaignGenerationService(unittest.TestCase):
         mock_frappe.db.rollback.assert_called()
         # Verify returned existing campaign cleanly without failing
         self.assertEqual(c_name, "EXISTING-CAMP-DUP")
+
+    def test_generate_campaign_copies_flow_custom_parameters(self):
+        created_docs = []
+        def mock_new_doc(dt):
+            doc = DummyNewDoc(dt)
+            created_docs.append(doc)
+            return doc
+
+        mock_frappe.new_doc.side_effect = mock_new_doc
+        mock_frappe.db.exists.return_value = False
+
+        custom_params = '{"meeting_link": "https://zoom.us/test", "week_number": "Week 10"}'
+        template = DummyTemplateDoc(
+            name="T-FLOW-001",
+            campaign_type="Flow",
+            glific_flow="flow_123",
+            flow_custom_parameters=custom_params
+        )
+        c_name = CampaignGenerationService.generate_campaign(template, "2026-07-03 09:00:00")
+
+        self.assertEqual(c_name, "TAP Campaign-GEN-001")
+        campaign_doc = [doc for doc in created_docs if doc.doctype == "TAP Campaign"][0]
+        self.assertEqual(getattr(campaign_doc, "flow_custom_parameters", None), custom_params)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import get_datetime
 from datetime import datetime
+from tap_buddy.utils.validation import validate_flow_custom_parameters
 
 class RecurringCampaignTemplate(Document):
     def validate(self):
@@ -35,6 +36,8 @@ class RecurringCampaignTemplate(Document):
             frappe.throw("WhatsApp Template is required when Campaign Type is Template.")
         elif campaign_type == "Flow" and not self.glific_flow:
             frappe.throw("Glific Flow is required when Campaign Type is Flow.")
+
+        validate_flow_custom_parameters(getattr(self, "flow_custom_parameters", None))
 
     def validate_cron(self):
         if self.recurrence_type == "Custom Cron":

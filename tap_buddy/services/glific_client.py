@@ -303,6 +303,12 @@ class GlificClient:
                 return {"createSessionTemplate": {"template": {"id": "mock_tmpl_123", "shortcode": variables.get("input", {}).get("shortcode", "mock"), "status": "PENDING"}}}
             if "languages(" in query:
                 return {"languages": [{"id": "1", "label": "English", "locale": "en", "isActive": True}]}
+            if "startGroupFlow" in query:
+                return {"startGroupFlow": {"success": True, "errors": []}}
+            if "startContactFlow" in query:
+                return {"startContactFlow": {"success": True, "errors": []}}
+            if "startWaGroupFlow" in query:
+                return {"startWaGroupFlow": {"success": True, "errors": []}}
 
         self.ensure_valid_token()
 
@@ -1301,6 +1307,29 @@ class GlificClient:
         errors = result.get("errors")
         if errors:
             raise GlificTerminalError(f"Terminal Glific Error: startContactFlow - {_serialize_graphql_errors(errors)}")
+        
+        return result
+
+    def start_group_flow(self, group_id, flow_id, default_results=None):
+        mutation = """
+        mutation startGroupFlow($groupId: ID!, $flowId: ID!, $defaultResults: Json) {
+            startGroupFlow(groupId: $groupId, flowId: $flowId, defaultResults: $defaultResults) {
+                success
+                errors { key message }
+            }
+        }
+        """
+        variables = {
+            "groupId": _coerce_glific_id(group_id),
+            "flowId": _coerce_glific_id(flow_id),
+        }
+        if default_results is not None:
+            variables["defaultResults"] = json.dumps(default_results) if isinstance(default_results, dict) else default_results
+
+        result = self._graphql_request(mutation, variables).get("startGroupFlow") or {}
+        errors = result.get("errors")
+        if errors:
+            raise GlificTerminalError(f"Terminal Glific Error: startGroupFlow - {_serialize_graphql_errors(errors)}")
         
         return result
 
