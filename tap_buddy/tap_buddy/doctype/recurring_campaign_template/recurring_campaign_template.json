@@ -1,0 +1,219 @@
+{
+ "actions": [],
+ "autoname": "field:template_name",
+ "creation": "2026-07-02 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "status",
+  "naming_pattern",
+  "schedule_section",
+  "recurrence_type",
+  "cron_expression",
+  "execution_timezone",
+  "missed_execution_policy",
+  "start_date",
+  "end_date",
+  "next_execution_date",
+  "last_execution_date",
+  "campaign_config_section",
+  "campaign_type",
+  "template",
+  "glific_flow",
+  "targeting_type",
+  "school_name",
+  "school_group",
+  "target_group",
+  "target_collection",
+  "variable_mappings",
+  "history_section",
+  "generated_campaigns"
+ ],
+ "fields": [
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Template Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nActive\nPaused\nCancelled\nCompleted",
+   "reqd": 1
+  },
+  {
+   "default": "{template_name} - {YYYY}-{MM}-{DD}",
+   "fieldname": "naming_pattern",
+   "fieldtype": "Data",
+   "label": "Auto-Naming Pattern",
+   "reqd": 1
+  },
+  {
+   "fieldname": "schedule_section",
+   "fieldtype": "Section Break",
+   "label": "Recurrence Schedule"
+  },
+  {
+   "fieldname": "recurrence_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Recurrence Type",
+   "options": "Daily\nWeekly\nMonthly\nCustom Cron",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.recurrence_type=='Custom Cron'",
+   "fieldname": "cron_expression",
+   "fieldtype": "Data",
+   "label": "Custom Cron Expression"
+  },
+  {
+   "default": "Asia/Kolkata",
+   "fieldname": "execution_timezone",
+   "fieldtype": "Select",
+   "label": "Execution Timezone",
+   "options": "Asia/Kolkata\nUTC",
+   "reqd": 1
+  },
+  {
+   "default": "Skip missed executions",
+   "fieldname": "missed_execution_policy",
+   "fieldtype": "Select",
+   "label": "Missed Execution Policy",
+   "options": "Skip missed executions\nCatch up latest only\nCatch up all",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Datetime",
+   "label": "Start Date & Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Datetime",
+   "label": "Optional End Date"
+  },
+  {
+   "fieldname": "next_execution_date",
+   "fieldtype": "Datetime",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "label": "Next Scheduled Execution",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_execution_date",
+   "fieldtype": "Datetime",
+   "label": "Last Execution",
+   "read_only": 1
+  },
+  {
+   "fieldname": "campaign_config_section",
+   "fieldtype": "Section Break",
+   "label": "Campaign Payload Configuration"
+  },
+  {
+   "default": "Flow",
+   "fieldname": "campaign_type",
+   "fieldtype": "Select",
+   "label": "Campaign Type",
+   "options": "Template\nFlow",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.campaign_type=='Template'",
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "WhatsApp Template",
+   "options": "WhatsApp Template"
+  },
+  {
+   "depends_on": "eval:doc.campaign_type=='Flow'",
+   "fieldname": "glific_flow",
+   "fieldtype": "Link",
+   "label": "Glific Flow",
+   "options": "Glific Flow"
+  },
+  {
+   "default": "Single School",
+   "fieldname": "targeting_type",
+   "fieldtype": "Select",
+   "label": "Targeting Type",
+   "options": "Single School\nSchool Group\nWhatsApp Group\nWhatsApp Group Collection",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.targeting_type=='Single School'",
+   "fieldname": "school_name",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "depends_on": "eval:doc.targeting_type=='School Group'",
+   "fieldname": "school_group",
+   "fieldtype": "Link",
+   "label": "School Group",
+   "options": "School Group"
+  },
+  {
+   "depends_on": "eval:doc.targeting_type=='WhatsApp Group'",
+   "fieldname": "target_group",
+   "fieldtype": "Link",
+   "label": "WhatsApp Group",
+   "options": "WhatsApp Group"
+  },
+  {
+   "depends_on": "eval:doc.targeting_type=='WhatsApp Group Collection'",
+   "fieldname": "target_collection",
+   "fieldtype": "Link",
+   "label": "WhatsApp Group Collection",
+   "options": "WhatsApp Group Collection"
+  },
+  {
+   "fieldname": "variable_mappings",
+   "fieldtype": "Table",
+   "label": "Variable Mappings",
+   "options": "Template Variable Mapping"
+  },
+  {
+   "fieldname": "history_section",
+   "fieldtype": "Section Break",
+   "label": "Audit & Generated History"
+  },
+  {
+   "fieldname": "generated_campaigns",
+   "fieldtype": "Table",
+   "label": "Generated Campaign History",
+   "options": "Generated Campaign History",
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 0,
+ "links": [],
+ "modified": "2026-07-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "Recurring Campaign Template",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "template_name"
+}
