@@ -152,12 +152,14 @@ scheduler_events = {
 	"cron": {
 		"*/1 * * * *": [
 			"tap_buddy.tasks.scheduler.trigger_scheduled_campaigns",
+			"tap_buddy.tasks.recurring.evaluate_recurring_templates",
 		],
 		"*/10 * * * *": [
 			"tap_buddy.tasks.scheduler.process_pending_lms_events",
 		],
 		"*/5 * * * *": [
 			"tap_buddy.tasks.scheduler.process_pending_webhook_events",
+			"tap_buddy.delivery_sync.worker.run_sync_cycle",
 		],
 		"0,30 * * * *": [
 			"tap_buddy.tasks.scheduler.retry_failed_messages",
