@@ -1,0 +1,92 @@
+[
+  {
+    "flow_id": "builtin_priority",
+    "category": "priority",
+    "numeric_id": "40585",
+    "uuid": "a42eeeee-7013-460f-99f4-f1fd7af6dd9b",
+    "name": "TAP Buddy Master - Priority Flows",
+    "keywords": [
+      "tap_builtin_priority"
+    ],
+    "published_status": "Published",
+    "last_published_at": "2026-07-06T18:22:05.036768Z",
+    "json_filename": "builtin_priority.json",
+    "webhook_node_uuid": "5961893c-5ce5-4d32-82a5-0e174bc3245d",
+    "glific_url": "https://staging.glific.com/flows/40585"
+  },
+  {
+    "flow_id": "builtin_onboarding",
+    "category": "onboarding",
+    "numeric_id": "40586",
+    "uuid": "7029c55a-df2f-4e6f-9703-af23bb50a01b",
+    "name": "TAP Buddy Master - Onboarding & Setup",
+    "keywords": [
+      "tap_builtin_onboarding"
+    ],
+    "published_status": "Published",
+    "last_published_at": "2026-07-06T18:22:05.358480Z",
+    "json_filename": "builtin_onboarding.json",
+    "webhook_node_uuid": "3fa03851-6086-45ac-8ff2-e8eab0f222b4",
+    "glific_url": "https://staging.glific.com/flows/40586"
+  },
+  {
+    "flow_id": "builtin_program_announcements",
+    "category": "program_announcements",
+    "numeric_id": "40587",
+    "uuid": "25fa4d21-6edf-42ae-8b44-df7cec08a070",
+    "name": "TAP Buddy Master - Program Announcements",
+    "keywords": [
+      "tap_builtin_program_announcements"
+    ],
+    "published_status": "Published",
+    "last_published_at": "2026-07-06T18:22:05.673113Z",
+    "json_filename": "builtin_program_announcements.json",
+    "webhook_node_uuid": "7cb5e719-1ba5-4470-be07-8946626c2a20",
+    "glific_url": "https://staging.glific.com/flows/40587"
+  },
+  {
+    "flow_id": "builtin_engagement",
+    "category": "engagement",
+    "numeric_id": "40588",
+    "uuid": "c64a4980-1162-43b3-b79e-cdd7e54984a1",
+    "name": "TAP Buddy Master - Engagement & Nudges",
+    "keywords": [
+      "tap_builtin_engagement"
+    ],
+    "published_status": "Published",
+    "last_published_at": "2026-07-06T18:22:05.999611Z",
+    "json_filename": "builtin_engagement.json",
+    "webhook_node_uuid": "9de2b10d-1755-4038-8060-61deca1cd1b8",
+    "glific_url": "https://staging.glific.com/flows/40588"
+  },
+  {
+    "flow_id": "builtin_feedback",
+    "category": "feedback",
+    "numeric_id": "40589",
+    "uuid": "81ee5b5f-94fb-4b5c-8826-e6f1ea2f7e6b",
+    "name": "TAP Buddy Master - Feedback & Reporting",
+    "keywords": [
+      "tap_builtin_feedback"
+    ],
+    "published_status": "Published",
+    "last_published_at": "2026-07-06T18:22:06.314880Z",
+    "json_filename": "builtin_feedback.json",
+    "webhook_node_uuid": "3ac8386d-efd7-4c14-b196-03e6e79c6625",
+    "glific_url": "https://staging.glific.com/flows/40589"
+  },
+  {
+    "flow_id": "builtin_celebratory",
+    "category": "celebratory",
+    "numeric_id": "40590",
+    "uuid": "c0b9ac59-473c-40ec-bb3c-d34581e92a61",
+    "name": "TAP Buddy Master - Celebratory / Motivational",
+    "keywords": [
+      "tap_builtin_celebratory"
+    ],
+    "published_status": "Published",
+    "last_published_at": "2026-07-06T18:22:06.620404Z",
+    "json_filename": "builtin_celebratory.json",
+    "webhook_node_uuid": "01b7323d-9748-4050-be92-6a1f475588bf",
+    "glific_url": "https://staging.glific.com/flows/40590"
+  }
+]

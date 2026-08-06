@@ -104,7 +104,8 @@ def handle() -> Optional[Dict[str, Any]]:
 
     try:
         frappe.logger("dynamic_context").info(f"[API {request_id}] Processing flow_category='{category}' flow_id='{flow_id}'.")
-        builder = ContextBuilder()
+        from tap_buddy.dynamic_context.campaign_context_builder import CampaignContextBuilder
+        builder = CampaignContextBuilder()
         context_dict = builder.build_context(payload)
 
         response_payload = format_versioned_response(context_dict, request_id=request_id)
