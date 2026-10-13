@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "wgas_plan",
+  "plan_item_row",
+  "tap_campaign",
+  "whatsapp_group",
+  "engagement_type",
+  "detail",
+  "contact_phone",
+  "provider_message_id",
+  "recorded_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "wgas_plan",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WGAS Plan",
+   "options": "WGAS Plan",
+   "reqd": 1
+  },
+  {
+   "fieldname": "plan_item_row",
+   "fieldtype": "Data",
+   "label": "Plan Item Row ID"
+  },
+  {
+   "fieldname": "tap_campaign",
+   "fieldtype": "Link",
+   "label": "TAP Campaign",
+   "options": "TAP Campaign"
+  },
+  {
+   "fieldname": "whatsapp_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Group",
+   "options": "WhatsApp Group"
+  },
+  {
+   "fieldname": "engagement_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Delivered\nRead\nReply\nReaction\nPoll Response\nFlow Response",
+   "reqd": 1
+  },
+  {
+   "fieldname": "detail",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Detail"
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Data",
+   "label": "Contact Phone"
+  },
+  {
+   "fieldname": "provider_message_id",
+   "fieldtype": "Data",
+   "label": "Provider Message ID"
+  },
+  {
+   "fieldname": "recorded_at",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Recorded At",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "WGAS Group Engagement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "recorded_at",
+ "sort_order": "DESC",
+ "states": []
+}

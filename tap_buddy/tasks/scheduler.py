@@ -551,6 +551,9 @@ def _render_message(campaign, school=None):
 
 
 def _get_template_text(campaign):
+    plain = (getattr(campaign, "plain_message_body", None) or "").strip()
+    if plain:
+        return plain
     if campaign.message_template:
         return campaign.message_template
     if campaign.template:

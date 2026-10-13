@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:glific_group_id",
+ "creation": "2026-10-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "glific_group_id",
+  "group_name",
+  "status",
+  "last_communication_at",
+  "last_synced_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "glific_group_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Glific Group ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "group_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Group Name",
+   "reqd": 1
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nInactive"
+  },
+  {
+   "fieldname": "last_communication_at",
+   "fieldtype": "Datetime",
+   "label": "Last Communication At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_synced_at",
+   "fieldtype": "Datetime",
+   "label": "Last Synced At",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "WhatsApp Group",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "search_fields": "group_name,glific_group_id",
+ "sort_field": "group_name",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "group_name"
+}

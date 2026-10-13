@@ -49,11 +49,16 @@ def normalize_phone(phone):
     
 
 def _derive_graphql_url(base_url):
-    if base_url.endswith("/api"):
-        return base_url
-    if "/api/v1" in base_url:
-        return f"{base_url.rsplit('/api/v1', 1)[0]}/api"
-    return f"{base_url.rstrip('/')}/api"
+    base = base_url.rstrip("/")
+    if base.endswith("/api/v1/graphql"):
+        return base
+    if base.endswith("/api/v1"):
+        return f"{base}/graphql"
+    if base.endswith("/api"):
+        return f"{base}/v1/graphql"
+    if "/api/v1" in base:
+        return f"{base.rsplit('/api/v1', 1)[0]}/api/v1/graphql"
+    return f"{base}/api/v1/graphql"
 
 
 def _derive_rest_base_url(base_url):
@@ -280,7 +285,7 @@ class GlificClient:
         except Exception as e:
             frappe.logger("tap_buddy_glific").warning(f"Failed to log auth event: {e}")
 
-    def _graphql_request(self, query, variables=None):
+    def _graphql_request(self, query, variables=None, timeout=15):
         if check_circuit_breaker("glific"):
             frappe.logger("tap_buddy_glific").error("Circuit breaker is OPEN. Dropping request.")
             raise GlificAPIError("Glific circuit breaker is open. Temporarily unavailable.")
@@ -319,15 +324,15 @@ class GlificClient:
         headers = dict(self.headers)
         start_time = time.time()
         try:
-            response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=15)
+            response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=timeout)
             if response.status_code == 401:
                 if self.refresh_token:
                     self._perform_token_refresh()
                     headers = dict(self.headers)
-                    response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=15)
+                    response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=timeout)
                 if response.status_code == 401 and self.primary_token and headers.get("Authorization") != self.primary_token:
                     headers["Authorization"] = self.primary_token
-                    response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=15)
+                    response = self.session.post(self.graphql_url, headers=headers, json=payload, timeout=timeout)
 
             duration_ms = int((time.time() - start_time) * 1000)
 
@@ -556,29 +561,38 @@ class GlificClient:
     # Group & Collection Management
     # ------------------------------------------------------------------
 
-    def get_group_collections(self):
-        """
-        Fetch all Group Collections from Glific.
-        """
+    def get_group_collections_page(self, limit=50, offset=0, timeout=60):
         query = """
-        query {
-            groups(opts: {limit: 10000}) {
+        query collections($opts: Opts) {
+            groups(opts: $opts) {
                 id
                 label
                 waGroupsCount
             }
         }
         """
-        result = self._graphql_request(query)
+        opts = {"limit": limit, "offset": offset, "order": "ASC"}
+        result = self._graphql_request(query, {"opts": opts}, timeout=timeout)
         return result.get("groups") or []
 
-    def get_whatsapp_groups(self):
-        """
-        Fetch all WhatsApp Groups and their Collection mappings from Glific.
-        """
+    def get_group_collections(self, page_size=50, timeout=60):
+        """Fetch all collections via pagination."""
+        all_rows = []
+        offset = 0
+        while True:
+            batch = self.get_group_collections_page(limit=page_size, offset=offset, timeout=timeout)
+            if not batch:
+                break
+            all_rows.extend(batch)
+            if len(batch) < page_size:
+                break
+            offset += page_size
+        return all_rows
+
+    def get_whatsapp_groups_page(self, limit=50, offset=0, timeout=60):
         query = """
-        query {
-            waGroups(opts: {limit: 10000}) {
+        query waGroups($opts: Opts) {
+            waGroups(opts: $opts) {
                 id
                 label
                 lastCommunicationAt
@@ -589,8 +603,23 @@ class GlificClient:
             }
         }
         """
-        result = self._graphql_request(query)
+        opts = {"limit": limit, "offset": offset, "order": "ASC"}
+        result = self._graphql_request(query, {"opts": opts}, timeout=timeout)
         return result.get("waGroups") or []
+
+    def get_whatsapp_groups(self, page_size=50, timeout=60):
+        """Fetch all WhatsApp groups via pagination."""
+        all_rows = []
+        offset = 0
+        while True:
+            batch = self.get_whatsapp_groups_page(limit=page_size, offset=offset, timeout=timeout)
+            if not batch:
+                break
+            all_rows.extend(batch)
+            if len(batch) < page_size:
+                break
+            offset += page_size
+        return all_rows
 
     def _get_default_wa_managed_phone_id(self):
         query = """
@@ -1253,10 +1282,7 @@ class GlificClient:
     # Flow execution
     # ------------------------------------------------------------------
 
-    def get_flows(self, is_active=True, limit=1000):
-        """
-        Fetch flows from Glific.
-        """
+    def get_flows_page(self, is_active=True, limit=50, offset=0, timeout=60):
         query = """
         query flows($filter: FlowFilter, $opts: Opts) {
             flows(filter: $filter, opts: $opts) {
@@ -1270,10 +1296,26 @@ class GlificClient:
         """
         variables = {
             "filter": {"isActive": is_active},
-            "opts": {"limit": limit}
+            "opts": {"limit": limit, "offset": offset, "order": "ASC"},
         }
-        result = self._graphql_request(query, variables)
+        result = self._graphql_request(query, variables, timeout=timeout)
         return result.get("flows") or []
+
+    def get_flows(self, is_active=True, page_size=50, timeout=60):
+        """Fetch all flows via pagination."""
+        all_rows = []
+        offset = 0
+        while True:
+            batch = self.get_flows_page(
+                is_active=is_active, limit=page_size, offset=offset, timeout=timeout
+            )
+            if not batch:
+                break
+            all_rows.extend(batch)
+            if len(batch) < page_size:
+                break
+            offset += page_size
+        return all_rows
 
     def start_contact_flow(self, phone, flow_id, default_results=None):
 

@@ -73,6 +73,7 @@ def process_webhook_event(event_name):
 
     _apply_status_to_message_log(message_log, normalized)
     _apply_status_to_recipient(message_log.campaign, message_log.school, normalized)
+    _maybe_record_wgas_engagement(message_log.campaign, normalized, provider_message_id)
 
     event.provider_message_id = provider_message_id
     event.status = normalized
@@ -106,6 +107,23 @@ def _create_event(payload, raw_body=None, signature=None):
     event.processed = 0
     event.insert(ignore_permissions=True)
     return event.name
+
+
+def _maybe_record_wgas_engagement(campaign_name, status_label, provider_message_id):
+    if not campaign_name or not frappe.db.get_value("TAP Campaign", campaign_name, "wgas_plan"):
+        return
+    try:
+        from tap_buddy.wgas.engagement import record_engagement_from_webhook
+
+        mapped = status_label if status_label in ("Delivered", "Read", "Reply", "Reaction") else "Delivered"
+        record_engagement_from_webhook(
+            campaign_name,
+            mapped,
+            detail=f"Webhook status: {status_label}",
+            provider_message_id=provider_message_id or "",
+        )
+    except Exception:
+        frappe.log_error(title="WGAS webhook engagement", message=frappe.get_traceback())
 
 
 def _parse_payload(payload_text):

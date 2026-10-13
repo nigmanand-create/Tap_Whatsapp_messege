@@ -1,5 +1,6 @@
 app_name = "tap_buddy"
 app_title = "TAP Buddy"
+# WGAS (WhatsApp Group Automation System) lives inside tap_buddy.wgas
 app_publisher = "Nigam"
 app_description = "WhatsApp Automation Platform"
 app_email = "activenigma@gmail.com"
@@ -11,22 +12,21 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "tap_buddy",
-# 		"logo": "/assets/tap_buddy/logo.png",
-# 		"title": "TAP Buddy",
-# 		"route": "/tap_buddy",
-# 		"has_permission": "tap_buddy.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "wgas",
+		"logo": "/assets/tap_buddy/images/wgas-icon.svg",
+		"title": "WGAS",
+		"route": "/wgas-hub",
+	}
+]
 
 # Includes in <head>
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/tap_buddy/css/tap_buddy.css"
-app_include_js = "/assets/tap_buddy/js/tap_buddy.js"
+app_include_css = "/assets/tap_buddy/css/wgas.css"
+app_include_js = "/assets/tap_buddy/js/wgas_page.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/tap_buddy/css/tap_buddy.css"
@@ -160,6 +160,7 @@ scheduler_events = {
 		"*/5 * * * *": [
 			"tap_buddy.tasks.scheduler.process_pending_webhook_events",
 			"tap_buddy.delivery_sync.worker.run_sync_cycle",
+			"tap_buddy.wgas.engagement.refresh_active_plans",
 		],
 		"0,30 * * * *": [
 			"tap_buddy.tasks.scheduler.retry_failed_messages",

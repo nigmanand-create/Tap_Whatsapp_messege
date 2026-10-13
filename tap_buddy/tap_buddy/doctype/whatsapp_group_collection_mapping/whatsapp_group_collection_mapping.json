@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "creation": "2026-10-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "collection",
+  "whatsapp_group"
+ ],
+ "fields": [
+  {
+   "fieldname": "collection",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Collection",
+   "options": "WhatsApp Group Collection",
+   "reqd": 1
+  },
+  {
+   "fieldname": "whatsapp_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "WhatsApp Group",
+   "options": "WhatsApp Group",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "WhatsApp Group Collection Mapping",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

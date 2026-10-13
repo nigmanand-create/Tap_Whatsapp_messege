@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "autoname": "format:WGAS-{plan_title}-{#####}",
+ "creation": "2026-10-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "plan_title",
+  "status",
+  "timezone",
+  "excel_file",
+  "import_summary",
+  "stats_section",
+  "total_items",
+  "scheduled_items",
+  "completed_items",
+  "failed_items",
+  "items_section",
+  "items"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Plan Title",
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nImported\nScheduling\nActive\nCompleted\nFailed",
+   "read_only": 1
+  },
+  {
+   "default": "Asia/Kolkata",
+   "fieldname": "timezone",
+   "fieldtype": "Data",
+   "label": "Timezone"
+  },
+  {
+   "fieldname": "excel_file",
+   "fieldtype": "Attach",
+   "label": "Excel Input File"
+  },
+  {
+   "fieldname": "import_summary",
+   "fieldtype": "Small Text",
+   "label": "Import Summary",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stats_section",
+   "fieldtype": "Section Break",
+   "label": "Statistics"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_items",
+   "fieldtype": "Int",
+   "label": "Total Items",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "scheduled_items",
+   "fieldtype": "Int",
+   "label": "Scheduled",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "completed_items",
+   "fieldtype": "Int",
+   "label": "Completed",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "failed_items",
+   "fieldtype": "Int",
+   "label": "Failed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Schedule Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "WGAS Plan Item"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "WGAS Plan",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "plan_title"
+}

@@ -32,9 +32,13 @@ class TAPCampaign(Document):
         # Check Campaign Type Requirements
         campaign_type = getattr(self, "campaign_type", "Template")
         if campaign_type == "Template":
-            if not getattr(self, "template", None):
-                frappe.throw("WhatsApp Template is required")
-            self._sync_message_template()
+            plain = (getattr(self, "plain_message_body", None) or "").strip()
+            if not getattr(self, "template", None) and not plain:
+                frappe.throw("WhatsApp Template or Plain Message Body is required")
+            if getattr(self, "template", None):
+                self._sync_message_template()
+            elif plain:
+                self.message_template = plain
         elif campaign_type == "Flow":
             if not getattr(self, "glific_flow", None):
                 frappe.throw("Glific Flow is required")

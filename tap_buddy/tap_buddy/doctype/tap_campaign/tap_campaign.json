@@ -25,7 +25,11 @@
   "variable_mappings",
   "flow_custom_parameters",
   "target_group",
-  "target_collection"
+  "target_collection",
+  "wgas_section",
+  "wgas_plan",
+  "wgas_plan_item",
+  "plain_message_body"
  ],
  "fields": [
   {
@@ -188,6 +192,32 @@
    "label": "WhatsApp Group Collection",
    "mandatory_depends_on": "eval:doc.targeting_type==\"WhatsApp Group Collection\"",
    "options": "WhatsApp Group Collection"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "wgas_section",
+   "fieldtype": "Section Break",
+   "label": "WGAS"
+  },
+  {
+   "fieldname": "wgas_plan",
+   "fieldtype": "Link",
+   "label": "WGAS Plan",
+   "options": "WGAS Plan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "wgas_plan_item",
+   "fieldtype": "Data",
+   "label": "WGAS Plan Item Row",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.campaign_type==\"Template\"",
+   "description": "Free-text body for WhatsApp group messages (WGAS). Used when no template variables are required.",
+   "fieldname": "plain_message_body",
+   "fieldtype": "Small Text",
+   "label": "Plain Message Body"
   }
  ],
  "is_submittable": 1,

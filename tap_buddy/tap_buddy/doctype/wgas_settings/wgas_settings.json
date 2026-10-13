@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "creation": "2026-10-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tab_connection",
+  "glific_connection_status",
+  "glific_last_tested_at",
+  "glific_connection_message",
+  "column_break_conn",
+  "btn_hint",
+  "tab_glific",
+  "glific_url",
+  "glific_phone_number",
+  "section_advanced",
+  "glific_token",
+  "glific_access_token",
+  "glific_refresh_token",
+  "glific_token_expiry",
+  "tab_webhooks",
+  "webhook_enabled",
+  "webhook_secret",
+  "webhook_signature_header",
+  "tab_general",
+  "system_name",
+  "default_timezone",
+  "fallback_template",
+  "integration_note"
+ ],
+ "fields": [
+  {
+   "fieldname": "tab_connection",
+   "fieldtype": "Tab Break",
+   "label": "Connection"
+  },
+  {
+   "default": "Not Tested",
+   "fieldname": "glific_connection_status",
+   "fieldtype": "Select",
+   "label": "Glific API Status",
+   "options": "Connected\nFailed\nNot Configured\nNot Tested",
+   "read_only": 1
+  },
+  {
+   "fieldname": "glific_last_tested_at",
+   "fieldtype": "Datetime",
+   "label": "Last Verified",
+   "read_only": 1
+  },
+  {
+   "fieldname": "glific_connection_message",
+   "fieldtype": "Small Text",
+   "label": "Status Detail",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_conn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "btn_hint",
+   "fieldtype": "Small Text",
+   "label": "Actions",
+   "read_only": 1,
+   "default": "Use toolbar: Verify Connection · Bootstrap Login · Sync Groups · Sync Flows"
+  },
+  {
+   "fieldname": "tab_glific",
+   "fieldtype": "Tab Break",
+   "label": "Glific"
+  },
+  {
+   "description": "Production: https://api.tap.glific.com/api/v1",
+   "fieldname": "glific_url",
+   "fieldtype": "Data",
+   "label": "API Base URL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "glific_phone_number",
+   "fieldtype": "Data",
+   "label": "Login Phone Number"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_advanced",
+   "fieldtype": "Section Break",
+   "label": "Advanced — manual tokens (optional)"
+  },
+  {
+   "fieldname": "glific_token",
+   "fieldtype": "Password",
+   "label": "API Token"
+  },
+  {
+   "fieldname": "glific_access_token",
+   "fieldtype": "Password",
+   "label": "Access Token"
+  },
+  {
+   "fieldname": "glific_refresh_token",
+   "fieldtype": "Password",
+   "label": "Refresh Token"
+  },
+  {
+   "fieldname": "glific_token_expiry",
+   "fieldtype": "Datetime",
+   "label": "Token Expiry (UTC)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tab_webhooks",
+   "fieldtype": "Tab Break",
+   "label": "Webhooks"
+  },
+  {
+   "default": "0",
+   "fieldname": "webhook_enabled",
+   "fieldtype": "Check",
+   "label": "Enable inbound webhooks"
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Secret"
+  },
+  {
+   "default": "X-Glific-Signature",
+   "fieldname": "webhook_signature_header",
+   "fieldtype": "Data",
+   "label": "Signature Header"
+  },
+  {
+   "fieldname": "tab_general",
+   "fieldtype": "Tab Break",
+   "label": "General"
+  },
+  {
+   "default": "WGAS — WhatsApp Group Automation System",
+   "fieldname": "system_name",
+   "fieldtype": "Data",
+   "label": "Display Name"
+  },
+  {
+   "default": "Asia/Kolkata",
+   "fieldname": "default_timezone",
+   "fieldtype": "Data",
+   "label": "Schedule Timezone"
+  },
+  {
+   "fieldname": "fallback_template",
+   "fieldtype": "Link",
+   "label": "Fallback WhatsApp Template",
+   "options": "WhatsApp Template"
+  },
+  {
+   "fieldname": "integration_note",
+   "fieldtype": "Small Text",
+   "label": "Note",
+   "read_only": 1,
+   "default": "Saving syncs to TAP Buddy Settings (single production Glific connection for dispatch)."
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-01 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TAP Buddy",
+ "name": "WGAS Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
