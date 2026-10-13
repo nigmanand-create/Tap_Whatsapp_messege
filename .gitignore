@@ -48,3 +48,7 @@ cypressVideos/
 .coverage
 coverage.xml
 .pytest_cache/
+
+sites/currentsite.txt
+archive/
+push_log.txt

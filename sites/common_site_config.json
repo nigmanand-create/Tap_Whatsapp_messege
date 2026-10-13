@@ -10,6 +10,7 @@
  "redis_socketio": "redis://127.0.0.1:13000",
  "restart_supervisor_on_update": false,
  "restart_systemd_on_update": false,
+ "default_site": "tapbuddy.local",
  "serve_default_site": true,
  "shallow_clone": true,
  "socketio_port": 9000,
